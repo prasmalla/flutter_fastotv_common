@@ -1,0 +1,24 @@
+name: flutter_fastotv_common
+author: Alexandr Topilski <support@fastogt.com>
+description: Common files for FastoTV project
+version: 1.0.0
+
+environment:
+  sdk: '>=2.0.0 <3.0.0'
+
+dependencies:
+  dart_chromecast: ^0.1.2
+  video_player:
+    git:
+      url: https://github.com/fastogt/video_player.git
+      ref: master
+
+  flutter_mdns_plugin:
+    git:
+      url: https://github.com/terrabythia/flutter_mdns_plugin.git
+      ref: master
+
+  fastotv_common:
+    git:
+      url: https://gitlab.com/fastogt/flutter_common.git
+      ref: master
