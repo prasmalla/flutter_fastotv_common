@@ -9,6 +9,7 @@ environment:
 dependencies:
   cached_network_image: ^2.0.0
   dart_chromecast: ^0.1.2
+  intl: ^0.16.0
   video_player:
     git:
       url: https://github.com/fastogt/video_player.git
@@ -22,4 +23,9 @@ dependencies:
   fastotv_common:
     git:
       url: https://gitlab.com/fastogt/flutter_common.git
+      ref: master
+
+  fastotv_dart:
+    git:
+      url: https://github.com/fastogt/fastotv_dart.git
       ref: master
