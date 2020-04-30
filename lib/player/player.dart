@@ -1,5 +1,8 @@
-import 'package:flutter/material.dart';
+import 'dart:html';
 import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:video_player/video_player.dart';
 
@@ -78,16 +81,22 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
   @override
   void initState() {
-    Screen.keepOn(true);
+    _setScreen(true);
     _initLink(currentUrl(), null);
     super.initState();
   }
 
   @override
   void dispose() {
-    Screen.keepOn(false);
+    _setScreen(false);
     _controller?.dispose();
     super.dispose();
+  }
+
+  void _setScreen(bool keepOn) {
+    if (!kIsWeb) {
+      Screen.keepOn(keepOn);
+    }
   }
 
   void setVolume(double volume) async {
