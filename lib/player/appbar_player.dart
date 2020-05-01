@@ -4,6 +4,7 @@ import 'package:screen/screen.dart';
 
 import 'package:flutter/material.dart';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:fastotv_common/system_methods.dart' as system;
 import 'package:fastotv_common/screen_orientation.dart' as orientation;
 import 'package:flutter_fastotv_common/chromecast/chromecast_info.dart';
@@ -71,8 +72,7 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
     _initPlatformState();
     setTimerOverlays();
     _appbarController = AnimationController(duration: const Duration(milliseconds: 100), value: 1.0, vsync: this);
-    _bottomOverlayController =
-        AnimationController(duration: const Duration(milliseconds: 100), value: 1.0, vsync: this);
+    _bottomOverlayController = AnimationController(duration: const Duration(milliseconds: 100), value: 1.0, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => isVisiblePrograms = orientation.isPortrait(context));
   }
 
@@ -267,11 +267,13 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
 
   // private:
   Future<void> _initPlatformState() async {
-    _volumeManager = await VolumeManager.getInstance();
-    final bright = await Screen.brightness;
-    setState(() {
-      brightness = bright;
-    });
+    if (!kIsWeb) {
+      _volumeManager = await VolumeManager.getInstance();
+      final bright = await Screen.brightness;
+      setState(() {
+        brightness = bright;
+      });
+    }
   }
 
   Widget get _gestureController {
@@ -281,14 +283,20 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
           _appBarVisible ? setOverlaysVisible(false) : setOverlaysVisible(true);
         },
         onVerticalDragUpdate: (DragUpdateDetails details) {
-          final isLeftPart = details.localPosition.dx < _getSizes().width / 2;
-          isLeftPart ? _onVerticalDragUpdateVolume(details) : _onVerticalDragUpdateBrightness(details);
+          if (!kIsWeb) {
+            final isLeftPart = details.localPosition.dx < _getSizes().width / 2;
+            isLeftPart ? _onVerticalDragUpdateVolume(details) : _onVerticalDragUpdateBrightness(details);
+          }
         },
         onVerticalDragStart: (DragStartDetails details) {
-          _handleVerticalDragStart(details);
+          if (!kIsWeb) {
+            _handleVerticalDragStart(details);
+          }
         },
         onVerticalDragEnd: (DragEndDetails details) {
-          _handleVerticalDragEnd(details);
+          if (!kIsWeb) {
+            _handleVerticalDragEnd(details);
+          }
         },
         onLongPressStart: (LongPressStartDetails details) {
           final isLeftPart = details.localPosition.dx < _getSizes().width / 2;
