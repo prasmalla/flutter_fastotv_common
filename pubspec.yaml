@@ -12,7 +12,7 @@ dependencies:
   intl: ^0.16.0
   video_player:
     git:
-      url: https://github.com/fastogt/video_player.git
+      url: https://github.com/vodemn/video_player.git
       ref: master
 
   flutter_mdns_plugin:
