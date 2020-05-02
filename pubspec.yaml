@@ -10,10 +10,7 @@ dependencies:
   cached_network_image: ^2.0.0
   dart_chromecast: ^0.1.2
   intl: ^0.16.0
-  video_player:
-    git:
-      url: https://github.com/fastogt/video_player.git
-      ref: master
+  video_player: ^0.10.9+1
 
   flutter_mdns_plugin:
     git:
