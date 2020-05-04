@@ -7,7 +7,7 @@ environment:
   sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
-  cached_network_image: ^2.0.0
+  cached_network_image: ^2.2.0
   dart_chromecast: ^0.1.2
   intl: ^0.16.0
   video_player:
