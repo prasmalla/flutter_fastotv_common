@@ -1,24 +1,21 @@
 import 'dart:async';
 import 'dart:core';
-import 'package:screen/screen.dart';
 
 import 'package:flutter/material.dart';
-
 import 'package:flutter/foundation.dart' show kIsWeb;
+
+import 'package:screen/screen.dart';
+
+import 'package:fastotv_common/volume_manager.dart';
 import 'package:fastotv_common/system_methods.dart' as system;
 import 'package:fastotv_common/screen_orientation.dart' as orientation;
 import 'package:flutter_fastotv_common/chromecast/chromecast_info.dart';
-import 'package:fastotv_common/volume_manager.dart';
-import 'package:fastotv_common/colors.dart';
 
 enum OverlayControl { NONE, VOLUME, BRIGHTNESS, SEEK_FORWARD, SEEK_REPLAY }
 
-abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
-    with TickerProviderStateMixin, WidgetsBindingObserver {
+abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with TickerProviderStateMixin{
   static const int APPBAR_TIMEOUT = 5;
   static const APPBAR_HEIGHT = 56.0;
-
-  Orientation _orientation;
 
   double playerOverlayOpacity = 0.0;
   OverlayControl currentPlayerControl = OverlayControl.NONE;
@@ -28,9 +25,10 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
   AnimationController _appbarController;
   AnimationController _bottomOverlayController;
   bool _appBarVisible;
-  bool isVisiblePrograms = false;
 
   double brightness = 0.5;
+
+  double get overlaysOpacity => 0.5;
 
   GlobalKey _gestureControllerKey = GlobalKey();
 
@@ -40,15 +38,11 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
 
   bool soundChange();
 
-  double interfaceOpacity();
-
-  Widget sideList() {
-    return SizedBox();
-  }
-
   Widget appBar();
 
   Widget playerArea();
+
+  Widget bottomControls();
 
   double bottomControlsHeight();
 
@@ -62,33 +56,22 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
 
   void onLongTapRight();
 
-  Widget bottomControls();
+  Color get overlaysTextColor;
+
+  Color get backgroundColor;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _appBarVisible = true;
     _initPlatformState();
     setTimerOverlays();
     _appbarController = AnimationController(duration: const Duration(milliseconds: 100), value: 1.0, vsync: this);
     _bottomOverlayController = AnimationController(duration: const Duration(milliseconds: 100), value: 1.0, vsync: this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => isVisiblePrograms = orientation.isPortrait(context));
-  }
-
-  @override
-  void didChangeMetrics() {
-    setState(() {
-      _orientation = MediaQuery.of(context).orientation;
-      if (_orientation == Orientation.portrait) {
-        isVisiblePrograms = true;
-      }
-    });
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     _appbarController.dispose();
     _bottomOverlayController.dispose();
     _timer?.cancel();
@@ -99,9 +82,15 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: backgroundColor?.withOpacity(1),
+        resizeToAvoidBottomInset: false,
+        body: Container(width: MediaQuery.of(context).size.width, child: playerOverlays()));
+  }
+
+  Widget playerOverlays() {
     final double statusBarHeight = MediaQuery.of(context).padding.top;
     final double bottomHeight = bottomControlsHeight();
-    _orientation = MediaQuery.of(context).orientation;
     //Animates appBar
     Animation<Offset> offsetAnimation = new Tween<Offset>(
       begin: Offset(0.0, -(APPBAR_HEIGHT + statusBarHeight)),
@@ -112,8 +101,7 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
       begin: Offset(0.0, 0.0),
       end: Offset(0.0, -(bottomHeight)),
     ).animate(_bottomOverlayController);
-
-    Widget player = Expanded(
+    return Expanded(
         flex: 3,
         child: Stack(children: <Widget>[
           /// Don't delete, or Stack widget will throw an exception
@@ -125,49 +113,40 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
           Center(
               child: Opacity(
                   opacity: 0.5,
-                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: _currentPlayerControlWidget()))),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: _currentPlayerControlWidget()))),
 
           /// AppBar & bottom bar
           SingleChildScrollView(
               physics: NeverScrollableScrollPhysics(),
-              child: Column(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-                //AppBar
-                AnimatedBuilder(
-                    animation: offsetAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: offsetAnimation.value,
-                        child: Container(
-                            color: Colors.transparent, height: APPBAR_HEIGHT + statusBarHeight, child: appBar()),
-                      );
-                    }),
-                //Gesture controller
-                Container(
-                    key: _gestureControllerKey,
-                    height: MediaQuery.of(context).size.height - APPBAR_HEIGHT - statusBarHeight,
-                    child: _gestureController),
-                //Bottom controls
-                AnimatedBuilder(
-                    animation: bottomOffsetAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: bottomOffsetAnimation.value,
-                        child: bottomControls(),
-                      );
-                    })
-              ]))
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    //AppBar
+                    AnimatedBuilder(
+                        animation: offsetAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: offsetAnimation.value,
+                            child: Container(
+                                color: Colors.transparent,
+                                height: APPBAR_HEIGHT + statusBarHeight,
+                                child: appBar()));
+                        }),
+                    //Gesture controller
+                    Container(
+                        key: _gestureControllerKey,
+                        height: MediaQuery.of(context).size.height - APPBAR_HEIGHT - statusBarHeight,
+                        child: _gestureController),
+                    //Bottom controls
+                    AnimatedBuilder(
+                        animation: bottomOffsetAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(offset: bottomOffsetAnimation.value, child: bottomControls());
+                        })
+                  ]))
         ]));
-    final ora = Builder(builder: (context) {
-      if (_orientation == Orientation.landscape) {
-        return Row(children: <Widget>[player, sideList()]);
-      }
-      return Column(children: <Widget>[appBar(), playerArea(), bottomControls(), sideList()]);
-    });
-
-    return Scaffold(
-        backgroundColor: backGroundColor()?.withOpacity(1),
-        resizeToAvoidBottomInset: false,
-        body: Container(width: MediaQuery.of(context).size.width, child: ora));
   }
 
   // public:
@@ -182,32 +161,6 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
         _timer?.cancel();
       }
     });
-  }
-
-  Color textColor() {
-    Color color;
-    if (orientation.isLandscape(context)) {
-      color = Colors.white;
-    }
-    return color;
-  }
-
-  Color controlsTextColor() {
-    Color color;
-    if (orientation.isLandscape(context)) {
-      color = Colors.white;
-    } else {
-      color = CustomColor().backGroundColorBrightness(Theme.of(context).primaryColor);
-    }
-    return color;
-  }
-
-  Color backGroundColor() {
-    Color color;
-    if (orientation.isLandscape(context)) {
-      color = Color.fromRGBO(0, 0, 0, interfaceOpacity());
-    }
-    return color;
   }
 
   void setOverlaysVisible(bool visible) {
@@ -245,23 +198,8 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T>
   Widget createPlayPauseButton() {
     return IconButton(
       onPressed: () => togglePlayPause(),
-      color: controlsTextColor(),
+      color: overlaysTextColor,
       icon: Icon(isPlaying() ? Icons.pause : Icons.play_arrow),
-    );
-  }
-
-  Widget sideBarButton() {
-    if (orientation.isPortrait(context)) {
-      return SizedBox();
-    }
-    return IconButton(
-      icon: Icon(Icons.list),
-      color: Colors.white,
-      onPressed: () {
-        setState(() {
-          isVisiblePrograms = !isVisiblePrograms;
-        });
-      },
     );
   }
 
