@@ -79,10 +79,12 @@ abstract class SideAppBarPlayer<T extends StatefulWidget> extends AppBarPlayer<T
     return color;
   }
 
-   Color get backgroundColor {
+  Color get backgroundColor {
     Color color;
     if (orientation.isLandscape(context)) {
-      color = Color.fromRGBO(0, 0, 0, overlaysOpacity);
+      color = Colors.black.withOpacity(overlaysOpacity);
+    } else {
+      color = Theme.of(context).primaryColor;
     }
     return color;
   }
