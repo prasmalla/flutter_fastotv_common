@@ -83,7 +83,7 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with Tick
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: backgroundColor?.withOpacity(1),
+        backgroundColor: backgroundColor,
         resizeToAvoidBottomInset: false,
         body: Container(width: MediaQuery.of(context).size.width, child: playerOverlays()));
   }
