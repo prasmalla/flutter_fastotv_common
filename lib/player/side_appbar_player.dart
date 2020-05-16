@@ -37,15 +37,15 @@ abstract class SideAppBarPlayer<T extends StatefulWidget> extends AppBarPlayer<T
 
   @override
   Widget build(BuildContext context) {
+    _orientation = MediaQuery.of(context).orientation;
     final ora = Builder(builder: (context) {
       if (_orientation == Orientation.landscape) {
         return Row(children: <Widget>[playerOverlays(), sideList()]);
       }
       return Column(children: <Widget>[appBar(), playerArea(), bottomControls(), sideList()]);
     });
-    _orientation = MediaQuery.of(context).orientation;
     return Scaffold(
-        backgroundColor: backgroundColor?.withOpacity(1),
+        backgroundColor: backgroundColor,
         resizeToAvoidBottomInset: false,
         body: Container(width: MediaQuery.of(context).size.width, child: ora));
   }
@@ -83,8 +83,6 @@ abstract class SideAppBarPlayer<T extends StatefulWidget> extends AppBarPlayer<T
     Color color;
     if (orientation.isLandscape(context)) {
       color = Colors.black.withOpacity(overlaysOpacity);
-    } else {
-      color = Theme.of(context).primaryColor;
     }
     return color;
   }
