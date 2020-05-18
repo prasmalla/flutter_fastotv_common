@@ -101,9 +101,7 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with Tick
       begin: Offset(0.0, 0.0),
       end: Offset(0.0, -(bottomHeight)),
     ).animate(_bottomOverlayController);
-    return Expanded(
-        flex: 3,
-        child: Stack(children: <Widget>[
+    return Stack(children: <Widget>[
           /// Don't delete, or Stack widget will throw an exception
           Container(),
 
@@ -146,7 +144,7 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with Tick
                           return Transform.translate(offset: bottomOffsetAnimation.value, child: bottomControls());
                         })
                   ]))
-        ]));
+        ]);
   }
 
   // public:

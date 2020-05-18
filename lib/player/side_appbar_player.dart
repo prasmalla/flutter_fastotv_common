@@ -40,7 +40,7 @@ abstract class SideAppBarPlayer<T extends StatefulWidget> extends AppBarPlayer<T
     _orientation = MediaQuery.of(context).orientation;
     final ora = Builder(builder: (context) {
       if (_orientation == Orientation.landscape) {
-        return Row(children: <Widget>[playerOverlays(), sideList()]);
+        return Row(children: <Widget>[Expanded(flex: 3, child: playerOverlays()), sideList()]);
       }
       return Column(children: <Widget>[appBar(), playerArea(), bottomControls(), sideList()]);
     });
