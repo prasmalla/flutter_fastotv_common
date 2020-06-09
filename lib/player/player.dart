@@ -1,21 +1,53 @@
 import 'dart:async';
+import 'dart:html';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-
+import 'package:flutter/material.dart';
+import 'package:screen/screen.dart';
 import 'package:video_player/video_player.dart';
 
-import 'package:screen/screen.dart';
+abstract class Player {
+  bool isPlaying();
 
-abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
+  Duration position();
+
+  double aspectRatio();
+
+  Future<void> pause();
+
+  Future<void> play();
+
+  Future<void> seekTo(Duration duration);
+
+  Future<void> seekForward(Duration duration) {
+    return seekTo(position() + duration);
+  }
+
+  Future<void> seekBackward(Duration duration) {
+    return seekTo(position() - duration);
+  }
+
+  void setVolume(double volume);
+
+  Future<void> setStreamUrl(String url);
+
+  Widget makePlayer();
+
+  VideoPlayerController controller();
+
+  void dispose();
+}
+
+class FlutterPlayer extends Player {
   VideoPlayerController _controller;
-  Future<void> _initializeVideoPlayerFuture;
 
-  LitePlayer();
+  VideoPlayerController controller() {
+    return _controller;
+  }
 
-  void onPlaying(dynamic userData);
-
-  void seekToInterrupt() {}
+  Widget makePlayer() {
+    return AspectRatio(aspectRatio: aspectRatio(), child: VideoPlayer(_controller));
+  }
 
   bool isPlaying() {
     if (_controller == null) {
@@ -25,55 +57,114 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     return _controller.value.isPlaying;
   }
 
-  void pause() async {
-    if (_controller == null) {
-      return;
-    }
-
-    _controller.pause();
-  }
-
-  void play() async {
-    if (_controller == null) {
-      return;
-    }
-
-    _controller.play();
-  }
-
-  void seekTo(Duration duration) async {
-    if (_controller == null) {
-      return;
-    }
-
-    _controller.seekTo(duration);
-  }
-
-  void seekForward(Duration duration) {
-    if (_controller == null || _controller.value.duration == null) {
-      return;
-    }
-
-    _controller.seekTo(_controller.value.position + duration);
-  }
-
-  void seekBackward(Duration duration) {
-    if (_controller == null || _controller.value.duration == null) {
-      return;
-    }
-
-    _controller.seekTo(_controller.value.position - duration);
-  }
-
-  VideoPlayerController controller() {
-    return _controller;
-  }
-
   Duration position() {
     if (_controller == null) {
       return Duration(milliseconds: 0);
     }
     return _controller.value.position;
+  }
+
+  double aspectRatio() {
+    if (_controller == null) {
+      return 16 / 9;
+    }
+
+    return _controller.value.aspectRatio;
+  }
+
+  Future<void> pause() async {
+    if (_controller == null) {
+      return Future.error('Invalid state');
+    }
+
+    return _controller.pause();
+  }
+
+  Future<void> play() async {
+    if (_controller == null) {
+      return Future.error('Invalid state');
+    }
+
+    return _controller.play();
+  }
+
+  Future<void> seekTo(Duration duration) async {
+    if (_controller == null) {
+      return Future.error('Invalid state');
+    }
+
+    return _controller.seekTo(duration);
+  }
+
+  Future<void> setVolume(double volume) {
+    if (_controller == null) {
+      return Future.error('Invalid state');
+    }
+    return _controller.setVolume(volume);
+  }
+
+  Future<void> setStreamUrl(String url) {
+    if (url.isEmpty) {
+      return Future.error('Invalid input');
+    }
+
+    VideoPlayerController old = _controller;
+    _controller = VideoPlayerController.network(url);
+    Future<void> result = _controller.initialize();
+    if (old != null) {
+      //old.pause();
+      Future.delayed(Duration(milliseconds: 100)).then((_) {
+        old.dispose();
+      });
+    }
+    return result;
+  }
+
+  void dispose() {
+    _controller?.dispose();
+  }
+}
+
+abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
+  Player _player;
+  Future<void> _initializeVideoPlayerFuture;
+
+  LitePlayer();
+
+  void onPlaying(dynamic userData);
+
+  void seekToInterrupt() {}
+
+  VideoPlayerController controller() {
+    return _player.controller();
+  }
+
+  bool isPlaying() {
+    return _player.isPlaying();
+  }
+
+  Duration position() {
+    return _player.position();
+  }
+
+  Future<void> pause() async {
+    return _player.pause();
+  }
+
+  Future<void> play() async {
+    return _player.play();
+  }
+
+  Future<void> seekTo(Duration duration) async {
+    return _player.seekTo(duration);
+  }
+
+  Future<void> seekForward(Duration duration) {
+    return _player.seekForward(duration);
+  }
+
+  Future<void> seekBackward(Duration duration) {
+    return _player.seekBackward(duration);
   }
 
   String currentUrl();
@@ -88,7 +179,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   @override
   void dispose() {
     _setScreen(false);
-    _controller?.dispose();
+    _player.dispose();
     super.dispose();
   }
 
@@ -99,10 +190,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   }
 
   void setVolume(double volume) async {
-    if (_controller == null) {
-      return;
-    }
-    _controller.setVolume(volume);
+    _player.setVolume(volume);
   }
 
   @override
@@ -114,28 +202,16 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
                 future: _initializeVideoPlayerFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
-                    return AspectRatio(aspectRatio: _controller.value.aspectRatio, child: VideoPlayer(_controller));
+                    return _player.makePlayer();
                   }
                   return AspectRatio(aspectRatio: 16 / 9, child: Center(child: CircularProgressIndicator()));
                 })));
   }
 
   void _initLink(String url, dynamic userData) {
-    if (url.isEmpty) {
-      return;
-    }
-
-    VideoPlayerController old = _controller;
-    _controller = VideoPlayerController.network(url);
-    _initializeVideoPlayerFuture = _controller.initialize().whenComplete(() => seekToInterrupt());
-    if (old != null) {
-      //old.pause();
-      Future.delayed(Duration(milliseconds: 100)).then((_) {
-        old.dispose();
-      });
-    }
-    final play = _controller.play();
-    play.then((_) {
+    final init = _player.setStreamUrl(url);
+    _initializeVideoPlayerFuture = init.whenComplete(() => seekToInterrupt());
+    play().then((_) {
       onPlaying(userData);
     });
   }
