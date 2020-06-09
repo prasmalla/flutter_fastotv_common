@@ -125,7 +125,7 @@ class FlutterPlayer extends Player {
 }
 
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
-  Player _player;
+  Player _player = FlutterPlayer();
   Future<void> _initializeVideoPlayerFuture;
 
   LitePlayer();
