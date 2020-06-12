@@ -52,7 +52,7 @@ class VodCard extends StatelessWidget {
               Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
                 Expanded(child: ClipRRect(borderRadius: border, child: PreviewIcon.vod(iconLink)))
               ]),
-              Positioned(
+              duration == null ? SizedBox() : Positioned(
                   bottom: 0, child: Container(height: 5, width: timeLine(), color: Theme.of(context).accentColor)),
               InkWell(onTap: () => onPressed())
             ])));
