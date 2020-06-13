@@ -3,8 +3,23 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/flutter_player.dart';
+import 'package:http/http.dart' as http;
 import 'package:screen/screen.dart';
 import 'package:video_player/video_player.dart';
+
+class Response {
+  Response(this.url, this.status, this.userData);
+
+  final Uri url;
+  final int status;
+  final dynamic userData;
+}
+
+Future<Response> _makeHttpRequest(Uri url, dynamic userData) {
+  return http.get(url).then((value) {
+    return Response(url, value.statusCode, userData);
+  });
+}
 
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   final _player = FlutterPlayer();
@@ -82,8 +97,23 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
             child: FutureBuilder(
                 future: _initializeVideoPlayerFuture,
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    return _player.makePlayer();
+                  if (snapshot.hasData) {
+                    if (snapshot.data is Response) {
+                      final Response resp = snapshot.data;
+                      if (resp.status == 202) {
+                        Future.delayed(Duration(milliseconds: 10000)).whenComplete(() {
+                          setState(() {
+                            _initVideoLink(resp.url, resp.userData);
+                          });
+                        });
+                      } else {
+                        setState(() {
+                          _initVideoLink(resp.url, resp.userData);
+                        });
+                      }
+                    } else if (snapshot.data is Future<void>) {
+                      return _player.makePlayer();
+                    }
                   }
                   return AspectRatio(aspectRatio: 16 / 9, child: Center(child: CircularProgressIndicator()));
                 })));
@@ -95,7 +125,16 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
       return;
     }
 
-    final init = _player.setStreamUrl(parsed);
+    if (parsed.scheme == 'http' || parsed.scheme == 'https') {
+      _initializeVideoPlayerFuture = _makeHttpRequest(parsed, userData);
+      return;
+    }
+
+    _initVideoLink(parsed, userData);
+  }
+
+  void _initVideoLink(Uri url, dynamic userData) {
+    final init = _player.setStreamUrl(url);
     _initializeVideoPlayerFuture = init.whenComplete(() => seekToInterrupt());
     play().then((_) {
       onPlaying(userData);
