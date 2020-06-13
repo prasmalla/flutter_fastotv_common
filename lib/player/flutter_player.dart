@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/iplayer.dart';
+import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 
 class FlutterPlayer extends IPlayer {
@@ -74,6 +75,27 @@ class FlutterPlayer extends IPlayer {
       return Future.error('Invalid input');
     }
 
+    final parsed = Uri.tryParse(url);
+    if (parsed == null) {
+      return Future.error('Invalid url');
+    }
+
+    // cod workaround
+    if (parsed.scheme == 'http' || parsed.scheme == 'https') {
+      final resp = http.get(parsed);
+      resp.then((resp) {
+        if (resp.statusCode == 202) {
+          Future.delayed(Duration(milliseconds: 100)).whenComplete(() {
+            return _startUrl(url);
+          });
+        }
+      });
+    }
+
+    return _startUrl(url);
+  }
+
+  Future<void> _startUrl(String url) {
     VideoPlayerController old = _controller;
     _controller = VideoPlayerController.network(url);
     Future<void> result = _controller.initialize();
