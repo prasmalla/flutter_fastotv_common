@@ -7,11 +7,11 @@ import 'package:http/http.dart' as http;
 import 'package:screen/screen.dart';
 import 'package:video_player/video_player.dart';
 
-abstract class PlayerState {}
+abstract class IPlayerState {}
 
-class InitPlayerState extends PlayerState {}
+class InitIPlayerState extends IPlayerState {}
 
-class HttpState extends PlayerState {
+class HttpState extends IPlayerState {
   HttpState(this.url, this.status, this.userData);
 
   final Uri url;
@@ -19,7 +19,7 @@ class HttpState extends PlayerState {
   final dynamic userData;
 }
 
-class ReadyToPlayState extends PlayerState {
+class ReadyToPlayState extends IPlayerState {
   ReadyToPlayState(this.url, this.userData);
 
   final Uri url;
@@ -27,8 +27,9 @@ class ReadyToPlayState extends PlayerState {
 }
 
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
+  static const TS_DURATION_MSEC = 10000;
   final _player = FlutterPlayer();
-  final StreamController<PlayerState> _state = StreamController<PlayerState>();
+  final StreamController<IPlayerState> _state = StreamController<IPlayerState>();
 
   LitePlayer();
 
@@ -85,12 +86,6 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     super.dispose();
   }
 
-  void _setScreen(bool keepOn) {
-    if (!kIsWeb) {
-      Screen.keepOn(keepOn);
-    }
-  }
-
   void setVolume(double volume) async {
     _player.setVolume(volume);
   }
@@ -100,31 +95,49 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     return Container(
         color: Colors.black,
         child: Center(
-            child: StreamBuilder<PlayerState>(
+            child: StreamBuilder<IPlayerState>(
                 stream: _state.stream,
-                initialData: InitPlayerState(),
+                initialData: InitIPlayerState(),
                 builder: (context, snapshot) {
-                  if (snapshot.data is HttpState) {
+                  if (snapshot.data is ReadyToPlayState) {
+                    seekToInterrupt();
+                    return _player.makePlayer();
+                  } else if (snapshot.data is HttpState) {
                     final HttpState resp = snapshot.data;
                     if (resp.status == 202) {
-                      Future.delayed(Duration(milliseconds: 10000)).whenComplete(() {
+                      Future.delayed(Duration(milliseconds: TS_DURATION_MSEC)).whenComplete(() {
                         _initVideoLink(resp.url, resp.userData);
                       });
                     } else {
                       _initVideoLink(resp.url, resp.userData);
                     }
-                    return AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: Center(
-                            child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                        )));
-                  } else if (snapshot.data is ReadyToPlayState) {
-                    seekToInterrupt();
-                    return _player.makePlayer();
+                    return _makeCircular();
                   }
-                  return AspectRatio(aspectRatio: 16 / 9, child: Center(child: CircularProgressIndicator()));
+                  return _makeCircular();
                 })));
+  }
+
+  void playLink(String url, dynamic userData) {
+    if (url.isEmpty) {
+      return;
+    }
+
+    _initLink(url, userData);
+  }
+
+  // private:
+  void _changeState(IPlayerState state) {
+    _state.add(state);
+  }
+
+  void _setScreen(bool keepOn) {
+    if (!kIsWeb) {
+      Screen.keepOn(keepOn);
+    }
+  }
+
+  Widget _makeCircular() {
+    return AspectRatio(aspectRatio: 16 / 9, child: Center(child: CircularProgressIndicator()));
   }
 
   void _initLink(String url, dynamic userData) {
@@ -135,7 +148,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
     if (parsed.scheme == 'http' || parsed.scheme == 'https') {
       http.get(url).then((value) {
-        _state.add(HttpState(parsed, value.statusCode, userData));
+        _changeState(HttpState(parsed, value.statusCode, userData));
       });
       return;
     }
@@ -146,18 +159,10 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   void _initVideoLink(Uri url, dynamic userData) {
     final init = _player.setStreamUrl(url);
     init.whenComplete(() {
-      _state.add(ReadyToPlayState(url, userData));
+      _changeState(ReadyToPlayState(url, userData));
     });
     play().then((_) {
       onPlaying(userData);
     });
-  }
-
-  void playLink(String url, dynamic userData) {
-    if (url.isEmpty) {
-      return;
-    }
-
-    _initLink(url, userData);
   }
 }
