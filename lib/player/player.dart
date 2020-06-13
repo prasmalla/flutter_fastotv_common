@@ -108,15 +108,17 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
                     final HttpState resp = snapshot.data;
                     if (resp.status == 202) {
                       Future.delayed(Duration(milliseconds: 10000)).whenComplete(() {
-                        setState(() {
-                          _initVideoLink(resp.url, resp.userData);
-                        });
-                      });
-                    } else {
-                      setState(() {
                         _initVideoLink(resp.url, resp.userData);
                       });
+                    } else {
+                      _initVideoLink(resp.url, resp.userData);
                     }
+                    return AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Center(
+                            child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                        )));
                   } else if (snapshot.data is ReadyToPlayState) {
                     seekToInterrupt();
                     return _player.makePlayer();
@@ -156,8 +158,6 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
       return;
     }
 
-    setState(() {
-      _initLink(url, userData);
-    });
+    _initLink(url, userData);
   }
 }
