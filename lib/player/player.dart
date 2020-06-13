@@ -7,23 +7,28 @@ import 'package:http/http.dart' as http;
 import 'package:screen/screen.dart';
 import 'package:video_player/video_player.dart';
 
-class Response {
-  Response(this.url, this.status, this.userData);
+abstract class PlayerState {}
+
+class InitPlayerState extends PlayerState {}
+
+class HttpState extends PlayerState {
+  HttpState(this.url, this.status, this.userData);
 
   final Uri url;
   final int status;
   final dynamic userData;
 }
 
-Future<Response> _makeHttpRequest(Uri url, dynamic userData) {
-  return http.get(url).then((value) {
-    return Response(url, value.statusCode, userData);
-  });
+class ReadyToPlayState extends PlayerState {
+  ReadyToPlayState(this.url, this.userData);
+
+  final Uri url;
+  final dynamic userData;
 }
 
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   final _player = FlutterPlayer();
-  Future<void> _initializeVideoPlayerFuture;
+  final StreamController<PlayerState> _state = StreamController<PlayerState>();
 
   LitePlayer();
 
@@ -74,6 +79,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
   @override
   void dispose() {
+    _state.close();
     _setScreen(false);
     _player.dispose();
     super.dispose();
@@ -94,26 +100,26 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     return Container(
         color: Colors.black,
         child: Center(
-            child: FutureBuilder(
-                future: _initializeVideoPlayerFuture,
+            child: StreamBuilder<PlayerState>(
+                stream: _state.stream,
+                initialData: InitPlayerState(),
                 builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    if (snapshot.data is Response) {
-                      final Response resp = snapshot.data;
-                      if (resp.status == 202) {
-                        Future.delayed(Duration(milliseconds: 10000)).whenComplete(() {
-                          setState(() {
-                            _initVideoLink(resp.url, resp.userData);
-                          });
-                        });
-                      } else {
+                  if (snapshot.data is HttpState) {
+                    final HttpState resp = snapshot.data;
+                    if (resp.status == 202) {
+                      Future.delayed(Duration(milliseconds: 10000)).whenComplete(() {
                         setState(() {
                           _initVideoLink(resp.url, resp.userData);
                         });
-                      }
-                    } else if (snapshot.data is Future<void>) {
-                      return _player.makePlayer();
+                      });
+                    } else {
+                      setState(() {
+                        _initVideoLink(resp.url, resp.userData);
+                      });
                     }
+                  } else if (snapshot.data is ReadyToPlayState) {
+                    seekToInterrupt();
+                    return _player.makePlayer();
                   }
                   return AspectRatio(aspectRatio: 16 / 9, child: Center(child: CircularProgressIndicator()));
                 })));
@@ -126,7 +132,9 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     }
 
     if (parsed.scheme == 'http' || parsed.scheme == 'https') {
-      _initializeVideoPlayerFuture = _makeHttpRequest(parsed, userData);
+      http.get(url).then((value) {
+        _state.add(HttpState(parsed, value.statusCode, userData));
+      });
       return;
     }
 
@@ -135,7 +143,9 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
   void _initVideoLink(Uri url, dynamic userData) {
     final init = _player.setStreamUrl(url);
-    _initializeVideoPlayerFuture = init.whenComplete(() => seekToInterrupt());
+    init.whenComplete(() {
+      _state.add(ReadyToPlayState(url, userData));
+    });
     play().then((_) {
       onPlaying(userData);
     });
