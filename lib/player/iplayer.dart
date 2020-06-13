@@ -26,7 +26,7 @@ abstract class IPlayer {
 
   void setVolume(double volume);
 
-  Future<void> setStreamUrl(String url);
+  Future<void> setStreamUrl(Uri url);
 
   Widget makePlayer();
 

@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/flutter_player.dart';
+import 'package:http/http.dart' as http;
 import 'package:screen/screen.dart';
 import 'package:video_player/video_player.dart';
 
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   final _player = FlutterPlayer();
+  final http.Client _httpChecker = http.Client();
   Future<void> _initializeVideoPlayerFuture;
 
   LitePlayer();
@@ -60,6 +62,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   @override
   void dispose() {
     _setScreen(false);
+    _httpChecker.close();
     _player.dispose();
     super.dispose();
   }
@@ -90,11 +93,36 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   }
 
   void _initLink(String url, dynamic userData) {
-    final init = _player.setStreamUrl(url);
-    _initializeVideoPlayerFuture = init.whenComplete(() => seekToInterrupt());
-    play().then((_) {
-      onPlaying(userData);
-    });
+    final parsed = Uri.tryParse(url);
+    if (parsed == null) {
+      return;
+    }
+
+    final start = () {
+      final init = _player.setStreamUrl(parsed);
+      _initializeVideoPlayerFuture = init.whenComplete(() => seekToInterrupt());
+      play().then((_) {
+        onPlaying(userData);
+      });
+    };
+
+    if (parsed.scheme == 'http' || parsed.scheme == 'https') {
+      final get = _httpChecker.get(url);
+      get.then((resp) {
+        if (resp.statusCode == 202) {
+          Future.delayed(Duration(milliseconds: 500)).whenComplete(() {
+            start();
+          });
+        } else {
+          start();
+        }
+      }, onError: () {
+        start();
+      });
+      return;
+    }
+
+    start();
   }
 
   void playLink(String url, dynamic userData) {
