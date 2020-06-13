@@ -70,7 +70,7 @@ class FlutterPlayer extends IPlayer {
     return _controller.setVolume(volume);
   }
 
-  Future<void> setStreamUrl(String url) async {
+  Future<void> setStreamUrl(String url) {
     if (url.isEmpty) {
       return Future.error('Invalid input');
     }
@@ -82,12 +82,17 @@ class FlutterPlayer extends IPlayer {
 
     // cod workaround
     if (parsed.scheme == 'http' || parsed.scheme == 'https') {
-      final resp = await http.get(parsed);
-      if (resp.statusCode == 202) {
-        await Future.delayed(Duration(milliseconds: 100));
-      }
+      return _delayedStart(url);
     }
 
+    return _startUrl(url);
+  }
+
+  Future<void> _delayedStart(String url) async {
+    final resp = await http.get(url);
+    if (resp.statusCode == 202) {
+      await Future.delayed(Duration(milliseconds: 100));
+    }
     return _startUrl(url);
   }
 
