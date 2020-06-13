@@ -91,7 +91,7 @@ class FlutterPlayer extends IPlayer {
   Future<void> _delayedStart(String url) async {
     final resp = await http.get(url);
     if (resp.statusCode == 202) {
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(Duration(milliseconds: 500));
     }
     return _startUrl(url);
   }
