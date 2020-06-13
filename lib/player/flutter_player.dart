@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/iplayer.dart';
+import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 
 class FlutterPlayer extends IPlayer {
@@ -74,10 +75,11 @@ class FlutterPlayer extends IPlayer {
       return Future.error('Invalid input');
     }
 
-    return _startUrl(url);
-  }
+    // cod workaround
+    if (url.scheme == 'http' || url.scheme == 'https') {
+      await http.get(url);
+    }
 
-  Future<void> _startUrl(Uri url) async {
     VideoPlayerController old = _controller;
     _controller = VideoPlayerController.network(url.toString());
     if (old != null) {
