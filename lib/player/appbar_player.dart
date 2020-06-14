@@ -13,7 +13,7 @@ import 'package:flutter_fastotv_common/chromecast/chromecast_info.dart';
 
 enum OverlayControl { NONE, VOLUME, BRIGHTNESS, SEEK_FORWARD, SEEK_REPLAY }
 
-abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with TickerProviderStateMixin{
+abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with TickerProviderStateMixin {
   static const int APPBAR_TIMEOUT = 5;
   static const APPBAR_HEIGHT = 56.0;
 
@@ -67,7 +67,8 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with Tick
     _initPlatformState();
     setTimerOverlays();
     _appbarController = AnimationController(duration: const Duration(milliseconds: 100), value: 1.0, vsync: this);
-    _bottomOverlayController = AnimationController(duration: const Duration(milliseconds: 100), value: 1.0, vsync: this);
+    _bottomOverlayController =
+        AnimationController(duration: const Duration(milliseconds: 100), value: 1.0, vsync: this);
   }
 
   @override
@@ -102,49 +103,43 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with Tick
       end: Offset(0.0, -(bottomHeight)),
     ).animate(_bottomOverlayController);
     return Stack(children: <Widget>[
-          /// Don't delete, or Stack widget will throw an exception
-          Container(),
+      /// Don't delete, or Stack widget will throw an exception
+      Container(),
 
-          playerArea(),
+      playerArea(),
 
-          /// Control view overlay
-          Center(
-              child: Opacity(
-                  opacity: 0.5,
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: _currentPlayerControlWidget()))),
+      /// Control view overlay
+      Center(
+          child: Opacity(
+              opacity: 0.5,
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: _currentPlayerControlWidget()))),
 
-          /// AppBar & bottom bar
-          SingleChildScrollView(
-              physics: NeverScrollableScrollPhysics(),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    //AppBar
-                    AnimatedBuilder(
-                        animation: offsetAnimation,
-                        builder: (context, child) {
-                          return Transform.translate(
-                            offset: offsetAnimation.value,
-                            child: Container(
-                                color: Colors.transparent,
-                                height: APPBAR_HEIGHT + statusBarHeight,
-                                child: appBar()));
-                        }),
-                    //Gesture controller
-                    Container(
-                        key: _gestureControllerKey,
-                        height: MediaQuery.of(context).size.height - APPBAR_HEIGHT - statusBarHeight,
-                        child: _gestureController),
-                    //Bottom controls
-                    AnimatedBuilder(
-                        animation: bottomOffsetAnimation,
-                        builder: (context, child) {
-                          return Transform.translate(offset: bottomOffsetAnimation.value, child: bottomControls());
-                        })
-                  ]))
-        ]);
+      /// AppBar & bottom bar
+      SingleChildScrollView(
+          physics: NeverScrollableScrollPhysics(),
+          child: Column(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
+            //AppBar
+            AnimatedBuilder(
+                animation: offsetAnimation,
+                builder: (context, child) {
+                  return Transform.translate(
+                      offset: offsetAnimation.value,
+                      child: Container(
+                          color: Colors.transparent, height: APPBAR_HEIGHT + statusBarHeight, child: appBar()));
+                }),
+            //Gesture controller
+            Container(
+                key: _gestureControllerKey,
+                height: MediaQuery.of(context).size.height - APPBAR_HEIGHT - statusBarHeight,
+                child: _gestureController),
+            //Bottom controls
+            AnimatedBuilder(
+                animation: bottomOffsetAnimation,
+                builder: (context, child) {
+                  return Transform.translate(offset: bottomOffsetAnimation.value, child: bottomControls());
+                })
+          ]))
+    ]);
   }
 
   // public:
