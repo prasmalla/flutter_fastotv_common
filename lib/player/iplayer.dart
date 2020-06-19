@@ -28,8 +28,6 @@ abstract class IPlayer {
 
   Future<void> setStreamUrl(Uri url);
 
-  void flush();
-
   Widget makePlayer();
 
   VideoPlayerController controller();

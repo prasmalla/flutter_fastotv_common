@@ -146,7 +146,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
       return;
     }
 
-    _player.flush();
+    _changeState(InitIPlayerState());
     if (parsed.scheme == 'http' || parsed.scheme == 'https') {
       http.head(url).then((value) {
         _changeState(HttpState(parsed, value.statusCode, userData));

@@ -84,21 +84,12 @@ class FlutterPlayer extends IPlayer {
       return Future.error('Invalid input');
     }
 
-    _controller = VideoPlayerController.network(url.toString());
-    return _controller.initialize();
-  }
-
-  @override
-  void flush() {
-    if (_controller == null) {
-      return;
-    }
-
     VideoPlayerController old = _controller;
+    _controller = VideoPlayerController.network(url.toString());
     Future.delayed(Duration(milliseconds: 100)).then((_) {
       old.dispose();
     });
-    _controller = null;
+    return _controller.initialize();
   }
 
   @override
