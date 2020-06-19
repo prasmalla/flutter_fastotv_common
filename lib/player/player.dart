@@ -27,7 +27,7 @@ class ReadyToPlayState extends IPlayerState {
 }
 
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
-  static const TS_DURATION_MSEC = 10000;
+  static const TS_DURATION_MSEC = 5000;
   final _player = FlutterPlayer();
   final StreamController<IPlayerState> _state = StreamController<IPlayerState>();
 
