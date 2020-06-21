@@ -35,6 +35,8 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
   void onPlaying(dynamic userData);
 
+  void onPlayingError(dynamic userData);
+
   void seekToInterrupt() {}
 
   VideoPlayerController controller() {
@@ -158,7 +160,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   }
 
   void _initVideoLink(Uri url, dynamic userData) {
-    final init = _player.setStreamUrl(url);
+    Future<void> init = _player.setStreamUrl(url).catchError(onPlayingError);
     init.whenComplete(() {
       _changeState(ReadyToPlayState(url, userData));
     });
