@@ -166,6 +166,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     });
     play().then((_) {
       onPlaying(userData);
-    });
+    },
+    onError: onPlayingError);
   }
 }
