@@ -8,8 +8,8 @@ class FlutterPlayer extends IPlayer {
   VideoPlayerController _controller;
 
   @override
-  VideoPlayerController controller() {
-    return _controller;
+  Widget timeLine() {
+    return VideoProgressIndicator(_controller, allowScrubbing: true);
   }
 
   @override
