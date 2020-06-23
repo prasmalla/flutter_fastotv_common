@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/flutter_player.dart';
 import 'package:http/http.dart' as http;
 import 'package:screen/screen.dart';
-import 'package:video_player/video_player.dart';
 
 abstract class IPlayerState {}
 
@@ -39,8 +38,8 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
   void seekToInterrupt() {}
 
-  VideoPlayerController controller() {
-    return _player.controller();
+  Widget timeLine() {
+    return _player.timeLine();
   }
 
   bool isPlaying() {

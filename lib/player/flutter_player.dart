@@ -8,8 +8,8 @@ class FlutterPlayer extends IPlayer {
   VideoPlayerController _controller;
 
   @override
-  VideoPlayerController controller() {
-    return _controller;
+  Widget timeLine({VideoProgressColors colors, bool allowScrubbing, EdgeInsets padding}) {
+    return VideoProgressIndicator(_controller, colors: colors, allowScrubbing: allowScrubbing, padding: padding);
   }
 
   @override

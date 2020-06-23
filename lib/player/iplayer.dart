@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 
 abstract class IPlayer {
   bool isPlaying();
@@ -30,7 +29,7 @@ abstract class IPlayer {
 
   Widget makePlayer();
 
-  VideoPlayerController controller();
+  Widget timeLine();
 
   void dispose();
 }
