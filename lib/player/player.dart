@@ -10,6 +10,8 @@ abstract class IPlayerState {}
 
 class InitIPlayerState extends IPlayerState {}
 
+class ErrorState extends IPlayerState {}
+
 class HttpState extends IPlayerState {
   HttpState(this.url, this.status, this.userData);
 
@@ -76,6 +78,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   void initState() {
     _setScreen(true);
     _initLink(currentUrl(), null);
+    _player.addListener(() => onPlayingError(''));
     super.initState();
   }
 
