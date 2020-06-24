@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-abstract class IPlayer {
+abstract class IPlayer extends ChangeNotifier {
   bool isPlaying();
 
   Duration position();
