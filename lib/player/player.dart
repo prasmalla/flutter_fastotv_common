@@ -12,14 +12,6 @@ class InitIPlayerState extends IPlayerState {}
 
 class ErrorState extends IPlayerState {}
 
-class HttpState extends IPlayerState {
-  HttpState(this.url, this.status, this.userData);
-
-  final Uri url;
-  final int status;
-  final dynamic userData;
-}
-
 class ReadyToPlayState extends IPlayerState {
   ReadyToPlayState(this.url, this.userData);
 
@@ -106,16 +98,6 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
                   if (snapshot.data is ReadyToPlayState) {
                     seekToInterrupt();
                     return _player.makePlayer();
-                  } else if (snapshot.data is HttpState) {
-                    final HttpState resp = snapshot.data;
-                    if (resp.status == 202) {
-                      Future.delayed(Duration(milliseconds: TS_DURATION_MSEC)).whenComplete(() {
-                        _initVideoLink(resp.url, resp.userData);
-                      });
-                    } else {
-                      _initVideoLink(resp.url, resp.userData);
-                    }
-                    return _makeCircular();
                   }
                   return _makeCircular();
                 })));
@@ -144,7 +126,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     return AspectRatio(aspectRatio: 16 / 9, child: Center(child: CircularProgressIndicator()));
   }
 
-  void _initLink(String url, dynamic userData) {
+  void _initLink(String url, dynamic userData) async {
     final parsed = Uri.tryParse(url);
     if (parsed == null) {
       return;
@@ -152,9 +134,20 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
     _changeState(InitIPlayerState());
     if (parsed.scheme == 'http' || parsed.scheme == 'https') {
-      http.get(url).then((value) {
-        _changeState(HttpState(parsed, value.statusCode, userData));
-      });
+      try {
+        final resp = await http.get(url).timeout(const Duration(seconds: 1));
+        if (resp.statusCode == 202) {
+          Future.delayed(Duration(milliseconds: TS_DURATION_MSEC)).whenComplete(() {
+            _initVideoLink(parsed, userData);
+          });
+        } else {
+          _initVideoLink(parsed, userData);
+        }
+      } on TimeoutException catch (e) {
+        _initVideoLink(parsed, userData);
+      } on Error catch (e) {
+        _initVideoLink(parsed, userData);
+      }
       return;
     }
 
