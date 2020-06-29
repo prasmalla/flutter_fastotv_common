@@ -151,8 +151,8 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     }
 
     _changeState(InitIPlayerState());
-    if ((parsed.scheme == 'http' || parsed.scheme == 'https') && parsed.path.contains('m3u8')) {
-      http.head(url).then((value) {
+    if (parsed.scheme == 'http' || parsed.scheme == 'https') {
+      http.get(url).then((value) {
         _changeState(HttpState(parsed, value.statusCode, userData));
       });
       return;
