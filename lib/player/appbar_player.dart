@@ -77,7 +77,6 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with Tick
     _bottomOverlayController.dispose();
     _timer?.cancel();
     system.setStatusBar(true);
-    orientation.allowAll();
     super.dispose();
   }
 
