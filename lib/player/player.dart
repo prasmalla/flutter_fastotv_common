@@ -82,8 +82,8 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     super.dispose();
   }
 
-  void setVolume(double volume) async {
-    _player.setVolume(volume);
+  Future<void> setVolume(double volume) async {
+    return _player.setVolume(volume);
   }
 
   @override
