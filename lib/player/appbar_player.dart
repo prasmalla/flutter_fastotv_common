@@ -195,6 +195,12 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with Tick
     );
   }
 
+  void playerCallBack() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   // private:
   Future<void> _initPlatformState() async {
     if (!kIsWeb) {
