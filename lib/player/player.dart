@@ -22,7 +22,7 @@ class ReadyToPlayState extends IPlayerState {
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
   final _player = FlutterPlayer();
-  final StreamController<IPlayerState> _state = StreamController<IPlayerState>();
+  final StreamController<IPlayerState> _state = StreamController<IPlayerState>.broadcast();
 
   LitePlayer();
 
@@ -31,10 +31,6 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   void onPlayingError(dynamic userData);
 
   void seekToInterrupt() {}
-
-  Widget timeLine() {
-    return _player.timeLine();
-  }
 
   bool isPlaying() {
     return _player.isPlaying();
@@ -103,6 +99,18 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
                 })));
   }
 
+  Widget timeLine() {
+    return StreamBuilder<IPlayerState>(
+        stream: _state.stream,
+        initialData: InitIPlayerState(),
+        builder: (context, snapshot) {
+          if (snapshot.data is ReadyToPlayState) {
+            return _player.timeLine();
+          }
+          return _makeLinear();
+        });
+  }
+
   void playLink(String url, dynamic userData) {
     if (url.isEmpty) {
       return;
@@ -124,6 +132,10 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
   Widget _makeCircular() {
     return AspectRatio(aspectRatio: 16 / 9, child: Center(child: CircularProgressIndicator()));
+  }
+
+  Widget _makeLinear() {
+    return Padding(padding: const EdgeInsets.only(top: 5.0), child: LinearProgressIndicator());
   }
 
   void _initLink(String url, dynamic userData) async {
