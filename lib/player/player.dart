@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/flutter_player.dart';
+import 'package:flutter_fastotv_common/player/iplayer.dart';
 import 'package:screen/screen.dart';
 
 abstract class IPlayerState {}
@@ -20,7 +21,7 @@ class ReadyToPlayState extends IPlayerState {
 
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
-  final _player = FlutterPlayer();
+  final IPlayer _player = FlutterPlayer();
   final StreamController<IPlayerState> _state = StreamController<IPlayerState>.broadcast();
 
   LitePlayer();
@@ -165,7 +166,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   }
 
   void _initVideoLink(Uri url, dynamic userData) {
-    Future<void> init = _player.setStreamUrl(url);
+    final Future<void> init = _player.setStreamUrl(url);
     init.then((value) {
       _changeState(ReadyToPlayState(url, userData));
       play().then((_) {
