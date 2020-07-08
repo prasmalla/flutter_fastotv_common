@@ -17,13 +17,6 @@ class FlutterPlayer extends IPlayer {
     return AspectRatio(aspectRatio: aspectRatio(), child: VideoPlayer(_controller));
   }
 
-  void onError() {
-    if (_controller.value.hasError) {
-      print(_controller.value.errorDescription);
-      notifyListeners();
-    }
-  }
-
   @override
   bool isPlaying() {
     if (_controller == null) {
@@ -93,17 +86,16 @@ class FlutterPlayer extends IPlayer {
 
     VideoPlayerController old = _controller;
     _controller = VideoPlayerController.network(url.toString());
-    _controller.addListener(onError);
-    Future.delayed(Duration(milliseconds: 100)).then((_) {
-      old?.dispose();
-      old?.removeListener(onError);
-    });
+    if (old != null) {
+      Future.delayed(Duration(milliseconds: 100)).then((_) {
+        old.dispose();
+      });
+    }
     return _controller.initialize();
   }
 
   @override
   void dispose() {
-    super.dispose();
     _controller?.dispose();
   }
 }

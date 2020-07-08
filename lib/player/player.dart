@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/flutter_player.dart';
-import 'package:http/http.dart' as http;
 import 'package:screen/screen.dart';
 
 abstract class IPlayerState {}
@@ -66,7 +65,6 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   void initState() {
     _setScreen(true);
     _initLink(currentUrl(), null);
-    _player.addListener(() => onPlayingError(''));
     super.initState();
   }
 
@@ -172,7 +170,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
       _changeState(ReadyToPlayState(url, userData));
       play().then((_) {
         onPlaying(userData);
-      }).catchError(onPlayingError);
-    }).catchError(onPlayingError);
+      }).catchError(() => onPlayingError(userData));
+    }).catchError(() => onPlayingError(userData));
   }
 }
