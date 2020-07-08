@@ -145,7 +145,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     }
 
     _changeState(InitIPlayerState());
-    if (parsed.scheme == 'http' || parsed.scheme == 'https') {
+    /*if (parsed.scheme == 'http' || parsed.scheme == 'https') {
       try {
         final resp = await http.get(url).timeout(const Duration(seconds: 1));
         if (resp.statusCode == 202) {
@@ -161,7 +161,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
         _initVideoLink(parsed, userData);
       }
       return;
-    }
+    }*/
 
     _initVideoLink(parsed, userData);
   }
