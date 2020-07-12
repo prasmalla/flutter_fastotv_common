@@ -23,7 +23,7 @@ class VLCPlayer extends IPlayer {
 
   @override
   Widget timeLine() {
-    return null; //VideoProgressIndicator(_controller, allowScrubbing: true);
+    return CircularProgressIndicator(); //VideoProgressIndicator(_controller, allowScrubbing: true);
   }
 
   @override
