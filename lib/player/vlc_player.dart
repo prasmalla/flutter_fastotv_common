@@ -7,15 +7,19 @@ import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 class VlcPlayerControllerEx extends VlcPlayerController {
   String url;
 
+  VlcPlayerControllerEx() : super(onInit: _onInitOnce) {}
+
   @override
   Future<void> setStreamUrl(String url) async {
     this.url = url;
-    super.setStreamUrl(url);
+    return super.setStreamUrl(url);
   }
 
   Future<void> setVolume(double volume) {
     return Future<void>.value();
   }
+
+  static void _onInitOnce() {}
 }
 
 class VLCPlayer extends IPlayer {
