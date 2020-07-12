@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/flutter_player.dart';
 import 'package:flutter_fastotv_common/player/iplayer.dart';
+import 'package:flutter_fastotv_common/player/vlc_player.dart';
 import 'package:screen/screen.dart';
 
 abstract class IPlayerState {}
@@ -19,12 +20,19 @@ class ReadyToPlayState extends IPlayerState {
   final dynamic userData;
 }
 
+enum PlayerImpl { VLC, FLUTTER }
+
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
-  final IPlayer _player = FlutterPlayer();
+  final IPlayer _player;
   final StreamController<IPlayerState> _state = StreamController<IPlayerState>.broadcast();
 
-  LitePlayer();
+  LitePlayer({PlayerImpl impl = PlayerImpl.VLC})
+      : _player = impl == PlayerImpl.FLUTTER ? FlutterPlayer() : VLCPlayer();
+
+  LitePlayer.vlc() : _player = VLCPlayer();
+
+  LitePlayer.flutter() : _player = FlutterPlayer();
 
   void onPlaying(dynamic userData);
 
