@@ -25,14 +25,23 @@ enum PlayerImpl { VLC, FLUTTER }
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
   final IPlayer _player;
-  final StreamController<IPlayerState> _state = StreamController<IPlayerState>.broadcast();
+  final StreamController<IPlayerState> state = StreamController<IPlayerState>.broadcast();
+  PlayerImpl impl = PlayerImpl.VLC;
 
-  LitePlayer({PlayerImpl impl = PlayerImpl.VLC})
+  LitePlayer({this.impl = PlayerImpl.VLC})
       : _player = impl == PlayerImpl.FLUTTER ? FlutterPlayer() : VLCPlayer();
 
   LitePlayer.vlc() : _player = VLCPlayer();
 
   LitePlayer.flutter() : _player = FlutterPlayer();
+
+  void playLink(String url, dynamic userData) {
+    if (url.isEmpty) {
+      return;
+    }
+
+    _initLink(url, userData);
+  }
 
   void onPlaying(dynamic userData);
 
@@ -79,7 +88,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
   @override
   void dispose() {
-    _state.close();
+    state.close();
     _setScreen(false);
     _player.dispose();
     super.dispose();
@@ -91,44 +100,46 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
   @override
   Widget build(BuildContext context) {
+    return impl == PlayerImpl.FLUTTER ? _buildFlutter() : _buildVlc();
+  }
+
+  Widget _buildFlutter() {
     return Container(
         color: Colors.black,
         child: Center(
             child: StreamBuilder<IPlayerState>(
-                stream: _state.stream,
+                stream: state.stream,
                 initialData: InitIPlayerState(),
                 builder: (context, snapshot) {
                   if (snapshot.data is ReadyToPlayState) {
                     seekToInterrupt();
                     return _player.makePlayer();
                   }
-                  return _makeCircular();
+                  return _player.makeCircular();
                 })));
+  }
+
+  Widget _buildVlc() {
+    return Container(
+        color: Colors.black,
+        child: Center(child: _player.makePlayer()));
   }
 
   Widget timeLine() {
     return StreamBuilder<IPlayerState>(
-        stream: _state.stream,
+        stream: state.stream,
         initialData: InitIPlayerState(),
         builder: (context, snapshot) {
           if (snapshot.data is ReadyToPlayState) {
             return _player.timeLine();
           }
-          return _makeLinear();
+          return _player.makeLinear();
         });
   }
 
-  void playLink(String url, dynamic userData) {
-    if (url.isEmpty) {
-      return;
-    }
-
-    _initLink(url, userData);
-  }
-
   // private:
-  void _changeState(IPlayerState state) {
-    _state.add(state);
+  void changeState(IPlayerState state) {
+    this.state.add(state);
   }
 
   void _setScreen(bool keepOn) {
@@ -137,21 +148,13 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     }
   }
 
-  Widget _makeCircular() {
-    return AspectRatio(aspectRatio: 16 / 9, child: Center(child: CircularProgressIndicator()));
-  }
-
-  Widget _makeLinear() {
-    return Padding(padding: const EdgeInsets.only(top: 5.0), child: LinearProgressIndicator());
-  }
-
   void _initLink(String url, dynamic userData) async {
     final parsed = Uri.tryParse(url);
     if (parsed == null) {
       return;
     }
 
-    _changeState(InitIPlayerState());
+    changeState(InitIPlayerState());
     /*if (parsed.scheme == 'http' || parsed.scheme == 'https') {
       try {
         final resp = await http.get(url).timeout(const Duration(seconds: 1));
@@ -176,7 +179,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   void _initVideoLink(Uri url, dynamic userData) {
     final Future<void> init = _player.setStreamUrl(url);
     init.then((value) {
-      _changeState(ReadyToPlayState(url, userData));
+      changeState(ReadyToPlayState(url, userData));
       play().then((_) {
         onPlaying(userData);
       }).catchError(() => onPlayingError(userData));
