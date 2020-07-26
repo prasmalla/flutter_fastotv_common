@@ -27,13 +27,27 @@ class VlcPlayerControllerEx extends VlcPlayerController {
 class VLCPlayer extends IPlayer {
   VlcPlayerControllerEx _controller = VlcPlayerControllerEx();
 
-  VLCPlayer() {
+  VLCPlayer([VoidCallback _onInit]) {
     _controller = VlcPlayerControllerEx(() {
-      _controller.play();
+      if (_onInit != null) _onInit();
     });
   }
 
   VlcPlayerControllerEx get controller => _controller;
+
+  bool get initialized => _controller.initialized;
+
+  void setInitUrl(String url) {
+    _controller.url = url;
+  }
+
+  void addListener(VoidCallback listener) {
+    _controller.addListener(listener);
+  }
+
+  void removeListener(VoidCallback listener) {
+    _controller.removeListener(listener);
+  }
 
   @override
   Widget timeLine() {

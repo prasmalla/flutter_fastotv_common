@@ -24,24 +24,22 @@ enum PlayerImpl { VLC, FLUTTER }
 
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
-  final IPlayer _player;
+  IPlayer get player;
   final StreamController<IPlayerState> state = StreamController<IPlayerState>.broadcast();
-  PlayerImpl impl = PlayerImpl.VLC;
 
-  LitePlayer({this.impl = PlayerImpl.VLC})
-      : _player = impl == PlayerImpl.FLUTTER ? FlutterPlayer() : VLCPlayer();
-
-  LitePlayer.vlc() : _player = VLCPlayer();
-
-  LitePlayer.flutter() : _player = FlutterPlayer();
+  LitePlayer();
 
   void playLink(String url, dynamic userData) {
     if (url.isEmpty) {
       return;
     }
 
-    _initLink(url, userData);
+    _initLink(url, (uri) => setVideoLink(uri, userData));
   }
+
+  void initVideoLink(Uri url);
+
+  void setVideoLink(Uri url, dynamic userData);
 
   void onPlaying(dynamic userData);
 
@@ -50,31 +48,35 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   void seekToInterrupt() {}
 
   bool isPlaying() {
-    return _player.isPlaying();
+    return player.isPlaying();
   }
 
   Duration position() {
-    return _player.position();
+    return player.position();
   }
 
   Future<void> pause() async {
-    return _player.pause();
+    return player.pause();
   }
 
   Future<void> play() async {
-    return _player.play();
+    return player.play();
   }
 
   Future<void> seekTo(Duration duration) async {
-    return _player.seekTo(duration);
+    return player.seekTo(duration);
   }
 
   Future<void> seekForward(Duration duration) {
-    return _player.seekForward(duration);
+    return player.seekForward(duration);
   }
 
   Future<void> seekBackward(Duration duration) {
-    return _player.seekBackward(duration);
+    return player.seekBackward(duration);
+  }
+
+  Future<void> setVolume(double volume) async {
+    return player.setVolume(volume);
   }
 
   String currentUrl();
@@ -82,7 +84,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   @override
   void initState() {
     _setScreen(true);
-    _initLink(currentUrl(), null);
+    _initLink(currentUrl(), initVideoLink);
     super.initState();
   }
 
@@ -90,39 +92,8 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   void dispose() {
     state.close();
     _setScreen(false);
-    _player.dispose();
+    player.dispose();
     super.dispose();
-  }
-
-  Future<void> setVolume(double volume) async {
-    return _player.setVolume(volume);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return impl == PlayerImpl.FLUTTER ? _buildFlutter() : _buildVlc();
-  }
-
-  Widget _buildFlutter() {
-    return Container(
-        color: Colors.black,
-        child: Center(
-            child: StreamBuilder<IPlayerState>(
-                stream: state.stream,
-                initialData: InitIPlayerState(),
-                builder: (context, snapshot) {
-                  if (snapshot.data is ReadyToPlayState) {
-                    seekToInterrupt();
-                    return _player.makePlayer();
-                  }
-                  return _player.makeCircular();
-                })));
-  }
-
-  Widget _buildVlc() {
-    return Container(
-        color: Colors.black,
-        child: Center(child: _player.makePlayer()));
   }
 
   Widget timeLine() {
@@ -131,9 +102,9 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
         initialData: InitIPlayerState(),
         builder: (context, snapshot) {
           if (snapshot.data is ReadyToPlayState) {
-            return _player.timeLine();
+            return player.timeLine();
           }
-          return _player.makeLinear();
+          return player.makeLinear();
         });
   }
 
@@ -148,7 +119,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     }
   }
 
-  void _initLink(String url, dynamic userData) async {
+  void _initLink(String url, void Function(Uri) onInit) async {
     final parsed = Uri.tryParse(url);
     if (parsed == null) {
       return;
@@ -160,29 +131,19 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
         final resp = await http.get(url).timeout(const Duration(seconds: 1));
         if (resp.statusCode == 202) {
           Future.delayed(Duration(milliseconds: TS_DURATION_MSEC)).whenComplete(() {
-            _initVideoLink(parsed, userData);
+            onInit(parsed);
           });
         } else {
-          _initVideoLink(parsed, userData);
+          onInit(parsed);
         }
       } on TimeoutException catch (e) {
-        _initVideoLink(parsed, userData);
+        onInit(parsed);
       } on Error catch (e) {
-        _initVideoLink(parsed, userData);
+        onInit(parsed);
       }
       return;
     }*/
 
-    _initVideoLink(parsed, userData);
-  }
-
-  void _initVideoLink(Uri url, dynamic userData) {
-    final Future<void> init = _player.setStreamUrl(url);
-    init.then((value) {
-      changeState(ReadyToPlayState(url, userData));
-      play().then((_) {
-        onPlaying(userData);
-      }).catchError(() => onPlayingError(userData));
-    }).catchError(() => onPlayingError(userData));
+    onInit(parsed);
   }
 }
