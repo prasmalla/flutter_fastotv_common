@@ -36,7 +36,7 @@ class _VideoScrubberState extends State<_VideoScrubber> {
       final Offset tapPos = box.globalToLocal(globalPosition);
       final double relative = tapPos.dx / box.size.width;
       final Duration position = controller.duration * relative;
-      controller.setTime(position.inSeconds);
+      controller.setTime(position.inMilliseconds);
     }
 
     return GestureDetector(
@@ -126,12 +126,16 @@ class _VideoProgressIndicatorVLCState extends State<VideoProgressIndicatorVLC> {
     if (controller.initialized) {
       final int duration = controller.duration.inMilliseconds;
       final int position = controller.position.inMilliseconds;
+      double result = position / duration;
+      if (result.isNaN || result.isInfinite) {
+        result = 0;
+      }
 
       progressIndicator = Stack(
         fit: StackFit.passthrough,
         children: <Widget>[
           LinearProgressIndicator(
-            value: position / duration,
+            value: result,
             valueColor: AlwaysStoppedAnimation<Color>(colors.playedColor),
             backgroundColor: Colors.transparent,
           ),
