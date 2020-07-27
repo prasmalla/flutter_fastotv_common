@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/iplayer.dart';
+import 'package:flutter_fastotv_common/player/vlc/progress_bar.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 
 class VlcPlayerControllerEx extends VlcPlayerController {
@@ -12,11 +13,7 @@ class VlcPlayerControllerEx extends VlcPlayerController {
   @override
   Future<void> setStreamUrl(String url) async {
     this.url = url;
-    if (initialized) {
-      return super.setStreamUrl(url);
-    } else {
-      return Future.value();
-    }
+    return super.setStreamUrl(url);
   }
 
   Future<void> setVolume(double volume) {
@@ -51,7 +48,7 @@ class VLCPlayer extends IPlayer {
 
   @override
   Widget timeLine() {
-    return makeLinear(); //VideoProgressIndicator(_controller, allowScrubbing: true);
+    return VlcProgressIndicator(_controller); //VideoProgressIndicator(_controller, allowScrubbing: true);
   }
 
   @override

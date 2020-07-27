@@ -18,8 +18,6 @@ class ReadyToPlayState extends IPlayerState {
   final dynamic userData;
 }
 
-enum PlayerImpl { VLC, FLUTTER }
-
 abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
   IPlayer get player;

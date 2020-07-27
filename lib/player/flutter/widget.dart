@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_fastotv_common/player/flutter_player.dart';
+import 'package:flutter_fastotv_common/player/flutter/player.dart';
 import 'package:flutter_fastotv_common/player/player.dart';
 
 abstract class LitePlayerFlutter<T extends StatefulWidget> extends LitePlayer<T> {

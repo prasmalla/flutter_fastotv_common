@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/player.dart';
-import 'package:flutter_fastotv_common/player/vlc_player.dart';
+import 'package:flutter_fastotv_common/player/vlc/player.dart';
 
 
 abstract class LitePlayerVLC<T extends StatefulWidget> extends LitePlayer<T> {
@@ -21,7 +21,7 @@ abstract class LitePlayerVLC<T extends StatefulWidget> extends LitePlayer<T> {
       return;
     }
 
-    _player.controller.setStreamUrl(url).catchError(() => onPlayingError(userData));
+    _player.controller.setStreamUrl(url).catchError((Object error) => onPlayingError(error));
   }
 
   @override
@@ -57,7 +57,7 @@ abstract class LitePlayerVLC<T extends StatefulWidget> extends LitePlayer<T> {
     changeState(ReadyToPlayState(url, userData));
     _player.play().then((value) {
       onPlaying(userData);
-    }).catchError(() => onPlayingError(userData));
+    }).catchError((Object error) => onPlayingError(error));
   }
 
   void _playerHadler() {
