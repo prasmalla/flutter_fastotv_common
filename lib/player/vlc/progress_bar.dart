@@ -1,51 +1,160 @@
-import 'dart:async';
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+import 'package:meta/meta.dart';
+import 'package:video_player/video_player.dart';
 
-class VlcProgressIndicator extends StatefulWidget {
+export 'package:video_player_platform_interface/video_player_platform_interface.dart'
+    show DurationRange, DataSourceType, VideoFormat;
+
+class _VideoScrubber extends StatefulWidget {
+  _VideoScrubber({
+    @required this.child,
+    @required this.controller,
+  });
+
+  final Widget child;
   final VlcPlayerController controller;
 
-  VlcProgressIndicator(this.controller);
-
   @override
-  State<StatefulWidget> createState() => VlcProgressIndicatorState();
+  _VideoScrubberState createState() => _VideoScrubberState();
 }
 
-class VlcProgressIndicatorState extends State<VlcProgressIndicator> {
-  double sliderValue = 0.0;
+class _VideoScrubberState extends State<_VideoScrubber> {
+  bool _controllerWasPlaying = false;
+
+  VlcPlayerController get controller => widget.controller;
+
+  @override
+  Widget build(BuildContext context) {
+    void seekToRelativePosition(Offset globalPosition) {
+      final RenderBox box = context.findRenderObject();
+      final Offset tapPos = box.globalToLocal(globalPosition);
+      final double relative = tapPos.dx / box.size.width;
+      final Duration position = controller.duration * relative;
+      controller.setTime(position.inSeconds);
+    }
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      child: widget.child,
+      onHorizontalDragStart: (DragStartDetails details) {
+        if (!controller.initialized) {
+          return;
+        }
+        _controllerWasPlaying = controller.playingState == PlayingState.PLAYING;
+        if (_controllerWasPlaying) {
+          controller.pause();
+        }
+      },
+      onHorizontalDragUpdate: (DragUpdateDetails details) {
+        if (!controller.initialized) {
+          return;
+        }
+        seekToRelativePosition(details.globalPosition);
+      },
+      onHorizontalDragEnd: (DragEndDetails details) {
+        if (_controllerWasPlaying) {
+          controller.play();
+        }
+      },
+      onTapDown: (TapDownDetails details) {
+        if (!controller.initialized) {
+          return;
+        }
+        seekToRelativePosition(details.globalPosition);
+      },
+    );
+  }
+}
+
+class VideoProgressIndicatorVLC extends StatefulWidget {
+  VideoProgressIndicatorVLC(
+    this.controller, {
+    VideoProgressColors colors,
+    this.allowScrubbing,
+    this.padding = const EdgeInsets.only(top: 5.0),
+  }) : colors = colors ?? VideoProgressColors();
+
+  final VlcPlayerController controller;
+
+  final VideoProgressColors colors;
+
+  final bool allowScrubbing;
+
+  final EdgeInsets padding;
+
+  @override
+  _VideoProgressIndicatorVLCState createState() => _VideoProgressIndicatorVLCState();
+}
+
+class _VideoProgressIndicatorVLCState extends State<VideoProgressIndicatorVLC> {
+  _VideoProgressIndicatorVLCState() {
+    listener = () {
+      if (!mounted) {
+        return;
+      }
+      setState(() {});
+    };
+  }
+
+  VoidCallback listener;
+
+  VlcPlayerController get controller => widget.controller;
+
+  VideoProgressColors get colors => widget.colors;
 
   @override
   void initState() {
     super.initState();
-    Timer.periodic(Duration(seconds: 1), (Timer timer) {
-      String state = widget.controller.playingState.toString();
-      if (this.mounted) {
-        setState(() {
-          if (state == "PlayingState.PLAYING" &&
-              sliderValue < widget.controller.duration.inSeconds) {
-            sliderValue = widget.controller.position.inSeconds.toDouble();
-          }
-        });
-      }
-    });
+    controller.addListener(listener);
+  }
+
+  @override
+  void deactivate() {
+    controller.removeListener(listener);
+    super.deactivate();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Slider(
-        activeColor: Colors.white,
-        value: sliderValue,
-        min: 0.0,
-        max: widget.controller.duration == null
-            ? 1.0
-            : widget.controller.duration.inSeconds.toDouble(),
-        onChanged: (progress) {
-          setState(() {
-            sliderValue = progress.floor().toDouble();
-          });
-          //convert to Milliseconds since VLC requires MS to set time
-          widget.controller.setTime(sliderValue.toInt() * 1000);
-        });
+    Widget progressIndicator;
+    if (controller.initialized) {
+      final int duration = controller.duration.inMilliseconds;
+      final int position = controller.position.inMilliseconds;
+
+      progressIndicator = Stack(
+        fit: StackFit.passthrough,
+        children: <Widget>[
+          LinearProgressIndicator(
+            value: position / duration,
+            valueColor: AlwaysStoppedAnimation<Color>(colors.playedColor),
+            backgroundColor: Colors.transparent,
+          ),
+        ],
+      );
+    } else {
+      progressIndicator = LinearProgressIndicator(
+        value: null,
+        valueColor: AlwaysStoppedAnimation<Color>(colors.playedColor),
+        backgroundColor: colors.backgroundColor,
+      );
+    }
+    final Widget paddedProgressIndicator = Padding(
+      padding: widget.padding,
+      child: progressIndicator,
+    );
+    if (widget.allowScrubbing) {
+      return _VideoScrubber(
+        child: paddedProgressIndicator,
+        controller: controller,
+      );
+    } else {
+      return paddedProgressIndicator;
+    }
   }
 }
