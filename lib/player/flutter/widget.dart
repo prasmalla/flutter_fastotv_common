@@ -11,6 +11,21 @@ abstract class LitePlayerFlutter<T extends StatefulWidget> extends LitePlayer<T>
   FlutterPlayer get player => _player;
 
   @override
+  void playLink(String url, dynamic userData) {
+    if (url.isEmpty) {
+      return;
+    }
+
+    _initLink(url, (uri) => _setVideoLink(uri, userData));
+  }
+
+  @override
+  void initState() {
+    _initLink(currentUrl(), (uri) => _setVideoLink(uri, null));
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
         color: Colors.black,
@@ -28,20 +43,38 @@ abstract class LitePlayerFlutter<T extends StatefulWidget> extends LitePlayer<T>
   }
 
   // private:
-  void initVideoLink(Uri url) {
-    final Future<void> init = _player.setStreamUrl(url);
-    init.then((value) {
-      changeState(ReadyToPlayState(url, null));
-      play().then((_) {
-        onPlaying(null);
-      }).catchError(() => onPlayingError(null));
-    }).catchError(() => onPlayingError(null));
+  void _initLink(String url, void Function(Uri) onInit) async {
+    final parsed = Uri.tryParse(url);
+    if (parsed == null) {
+      return;
+    }
+
+    changeState(InitIPlayerState());
+    /*if (parsed.scheme == 'http' || parsed.scheme == 'https') {
+      try {
+        final resp = await http.get(url).timeout(const Duration(seconds: 1));
+        if (resp.statusCode == 202) {
+          Future.delayed(Duration(milliseconds: TS_DURATION_MSEC)).whenComplete(() {
+            onInit(parsed);
+          });
+        } else {
+          onInit(parsed);
+        }
+      } on TimeoutException catch (e) {
+        onInit(parsed);
+      } on Error catch (e) {
+        onInit(parsed);
+      }
+      return;
+    }*/
+
+    onInit(parsed);
   }
 
-  void setVideoLink(Uri url, dynamic userData) {
+  void _setVideoLink(Uri url, dynamic userData) {
     final Future<void> init = _player.setStreamUrl(url);
     init.then((value) {
-      changeState(ReadyToPlayState(url, userData));
+      changeState(ReadyToPlayState(url.toString(), userData));
       play().then((_) {
         onPlaying(userData);
       }).catchError(() => onPlayingError(userData));

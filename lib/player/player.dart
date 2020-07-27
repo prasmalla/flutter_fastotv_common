@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter_fastotv_common/player/flutter_player.dart';
 import 'package:flutter_fastotv_common/player/iplayer.dart';
-import 'package:flutter_fastotv_common/player/vlc_player.dart';
 import 'package:screen/screen.dart';
 
 abstract class IPlayerState {}
@@ -16,7 +14,7 @@ class ErrorState extends IPlayerState {}
 class ReadyToPlayState extends IPlayerState {
   ReadyToPlayState(this.url, this.userData);
 
-  final Uri url;
+  final String url;
   final dynamic userData;
 }
 
@@ -29,17 +27,7 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
 
   LitePlayer();
 
-  void playLink(String url, dynamic userData) {
-    if (url.isEmpty) {
-      return;
-    }
-
-    _initLink(url, (uri) => setVideoLink(uri, userData));
-  }
-
-  void initVideoLink(Uri url);
-
-  void setVideoLink(Uri url, dynamic userData);
+  void playLink(String url, dynamic userData);
 
   void onPlaying(dynamic userData);
 
@@ -84,7 +72,6 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   @override
   void initState() {
     _setScreen(true);
-    _initLink(currentUrl(), initVideoLink);
     super.initState();
   }
 
@@ -117,33 +104,5 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
     if (!kIsWeb) {
       Screen.keepOn(keepOn);
     }
-  }
-
-  void _initLink(String url, void Function(Uri) onInit) async {
-    final parsed = Uri.tryParse(url);
-    if (parsed == null) {
-      return;
-    }
-
-    changeState(InitIPlayerState());
-    /*if (parsed.scheme == 'http' || parsed.scheme == 'https') {
-      try {
-        final resp = await http.get(url).timeout(const Duration(seconds: 1));
-        if (resp.statusCode == 202) {
-          Future.delayed(Duration(milliseconds: TS_DURATION_MSEC)).whenComplete(() {
-            onInit(parsed);
-          });
-        } else {
-          onInit(parsed);
-        }
-      } on TimeoutException catch (e) {
-        onInit(parsed);
-      } on Error catch (e) {
-        onInit(parsed);
-      }
-      return;
-    }*/
-
-    onInit(parsed);
   }
 }

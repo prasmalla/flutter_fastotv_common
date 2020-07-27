@@ -8,7 +8,7 @@ abstract class LitePlayerVLC<T extends StatefulWidget> extends LitePlayer<T> {
 
   bool _init = false;
 
-  Uri uri;
+  String url;
 
   dynamic userData;
 
@@ -16,10 +16,19 @@ abstract class LitePlayerVLC<T extends StatefulWidget> extends LitePlayer<T> {
   VLCPlayer get player => _player;
 
   @override
+  void playLink(String url, dynamic userData) {
+    if (url.isEmpty) {
+      return;
+    }
+
+    _player.controller.setStreamUrl(url).catchError(() => onPlayingError(userData));
+  }
+
+  @override
   void initState() {
     super.initState();
-    _player.setInitUrl(currentUrl());
     _player.addListener(_playerHadler);
+    _initLink(currentUrl());
   }
 
   @override
@@ -35,37 +44,27 @@ abstract class LitePlayerVLC<T extends StatefulWidget> extends LitePlayer<T> {
         child: Center(child: _player.makePlayer()));
   }
 
-  Widget timeLine() {
-    return StreamBuilder<IPlayerState>(
-        stream: state.stream,
-        initialData: InitIPlayerState(),
-        builder: (context, snapshot) {
-          if (snapshot.data is ReadyToPlayState) {
-            return _player.timeLine();
-          }
-          return _player.makeLinear();
-        });
-  }
-
-  void initVideoLink(Uri url) {
-    _player.setInitUrl(url.toString());
-  }
-
-  void setVideoLink(Uri url, dynamic userData) {
-    _player.setStreamUrl(url).catchError(() => onPlayingError(userData));
-  }
-
   // private:
-  void _onVlcInit(Uri url, dynamic userData) {
+  void _initLink(String url) {
+    if (url.isEmpty) {
+      return;
+    }
+
+    _player.setInitUrl(url);
+  }
+
+  void _onVlcInit(String url, dynamic userData) {
     changeState(ReadyToPlayState(url, userData));
-    onPlaying(userData);
+    _player.play().then((value) {
+      onPlaying(userData);
+    }).catchError(() => onPlayingError(userData));
   }
 
   void _playerHadler() {
     if (_player.initialized != _init) {
       _init = _player.initialized;
-      if (_init) {
-        _onVlcInit(uri, userData);
+      if (_player.initialized) {
+        _onVlcInit(url, userData);
       }
     }
   }
