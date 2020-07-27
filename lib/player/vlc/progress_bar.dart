@@ -131,7 +131,7 @@ class _VideoProgressIndicatorVLCState extends State<VideoProgressIndicatorVLC> {
         fit: StackFit.passthrough,
         children: <Widget>[
           LinearProgressIndicator(
-            value: position / duration,
+            value: position ?? 0 / duration ?? 1,
             valueColor: AlwaysStoppedAnimation<Color>(colors.playedColor),
             backgroundColor: Colors.transparent,
           ),
