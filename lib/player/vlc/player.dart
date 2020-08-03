@@ -15,10 +15,6 @@ class VlcPlayerControllerEx extends VlcPlayerController {
     this.url = url;
     return super.setStreamUrl(url);
   }
-
-  Future<void> setVolume(double volume) {
-    return Future<void>.value();
-  }
 }
 
 class VLCPlayer extends IPlayer {
@@ -110,7 +106,7 @@ class VLCPlayer extends IPlayer {
     if (!_controller.initialized) {
       return Future.error('Invalid state');
     }
-    return _controller.setVolume(volume);
+    return _controller.setVolume((volume * 100).toInt());
   }
 
   @override
