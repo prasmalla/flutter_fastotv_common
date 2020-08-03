@@ -10,6 +10,8 @@ const String PROGRAMME_TAG = 'programme';
 const String START_TAG = 'start';
 const String STOP_TAG = 'stop';
 const String TITLE_TAG = 'title';
+const String CATEGORY_TAG = 'category';
+const String DESCRIPTION_TAG = 'desc';
 const int INVALID_UTC_TIME_MILLI_SEC = 8640000000000000;
 
 int _getUtcMSecFromXMLTVString(String data) {
@@ -51,8 +53,10 @@ List<ProgrammeInfo> parseXmlContent(String data) {
         final start = _getUtcMSecFromXMLTVString(startText);
         final stop = _getUtcMSecFromXMLTVString(stopText);
         final String title = programme.findElements(TITLE_TAG).first.text;
+        final String category = programme.findElements(CATEGORY_TAG).first.text;
+        final String description = programme.findElements(DESCRIPTION_TAG).first.text;
 
-        result.add(ProgrammeInfo(channel, start, stop, title));
+        result.add(ProgrammeInfo(channel, start, stop, title, category, description));
       }
     });
   } catch (error) {}
