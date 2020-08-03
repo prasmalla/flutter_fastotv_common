@@ -53,13 +53,25 @@ List<ProgrammeInfo> parseXmlContent(String data) {
         final start = _getUtcMSecFromXMLTVString(startText);
         final stop = _getUtcMSecFromXMLTVString(stopText);
         final String title = programme.findElements(TITLE_TAG).first.text;
-        final String category = programme.findElements(CATEGORY_TAG).first.text;
-        final String description = programme.findElements(DESCRIPTION_TAG).first.text;
+
+        String category = '';
+        final categories = programme.findElements(CATEGORY_TAG);
+        if (categories.isNotEmpty) {
+          category = programme.findElements(CATEGORY_TAG).first.text;
+        }
+
+        String description = '';
+        final desc = programme.findElements(CATEGORY_TAG);
+        if (desc.isNotEmpty) {
+          description = programme.findElements(DESCRIPTION_TAG).first.text;
+        }
 
         result.add(ProgrammeInfo(channel, start, stop, title, category, description));
       }
     });
-  } catch (error) {}
+  } catch (error) {
+    print(error);
+  }
 
   return result;
 }
