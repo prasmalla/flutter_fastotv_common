@@ -3,7 +3,7 @@ import 'package:flutter_fastotv_common/player/player.dart';
 import 'package:flutter_fastotv_common/player/vlc/player.dart';
 
 
-abstract class LitePlayerVLC<T extends StatefulWidget> extends LitePlayer<T> {
+abstract class LitePlayerVLC<T extends StatefulWidget, S> extends LitePlayer<T, S> {
   VLCPlayer _player = VLCPlayer();
 
   bool _init = false;

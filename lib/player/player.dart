@@ -18,7 +18,7 @@ class ReadyToPlayState extends IPlayerState {
   final dynamic userData;
 }
 
-abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
+abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
   IPlayer get player;
   final StreamController<IPlayerState> state = StreamController<IPlayerState>.broadcast();
@@ -32,6 +32,10 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   void onPlayingError(dynamic userData);
 
   void seekToInterrupt() {}
+
+  String currentUrl();
+
+  void playChannel(S stream);
 
   bool isPlaying() {
     return player.isPlaying();
@@ -64,8 +68,6 @@ abstract class LitePlayer<T extends StatefulWidget> extends State<T> {
   Future<void> setVolume(double volume) async {
     return player.setVolume(volume);
   }
-
-  String currentUrl();
 
   @override
   void initState() {
