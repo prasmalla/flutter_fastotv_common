@@ -69,9 +69,7 @@ List<ProgrammeInfo> parseXmlContent(String data) {
         result.add(ProgrammeInfo(channel, start, stop, title, category, description));
       }
     });
-  } catch (error) {
-    print(error);
-  }
+  } catch (error) {}
 
   return result;
 }
