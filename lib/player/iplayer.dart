@@ -29,6 +29,14 @@ abstract class IPlayer {
 
   Widget makePlayer();
 
+  Widget makeCircular() {
+    return AspectRatio(aspectRatio: 16 / 9, child: Center(child: CircularProgressIndicator()));
+  }
+
+  Widget makeLinear() {
+    return Padding(padding: const EdgeInsets.only(top: 5.0), child: LinearProgressIndicator());
+  }
+
   Widget timeLine();
 
   void dispose();
