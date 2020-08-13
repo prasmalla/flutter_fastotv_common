@@ -1,11 +1,7 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:persist_theme/persist_theme.dart';
-import 'package:provider/provider.dart';
-
 import 'package:flutter_fastotv_common/chromecast/chromecast_info.dart';
-import 'package:fastotv_common/colors.dart';
 
 class ChannelPageAppBar extends StatefulWidget {
   final String title;
@@ -39,8 +35,7 @@ class _ChannelPageAppBarState extends State<ChannelPageAppBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeModel>(builder: (context, model, child) {
-      final textColor = widget.textColor ?? CustomColor().primaryColorBrightness(model);
+      Color textColor = widget.textColor ?? Theme.of(context).primaryTextTheme.caption.color;
       return AppBar(
           actionsIconTheme: IconThemeData(color: textColor),
           leading: IconButton(
@@ -48,7 +43,6 @@ class _ChannelPageAppBarState extends State<ChannelPageAppBar> {
           actions: actionButtons,
           backgroundColor: widget.backgroundColor ?? Theme.of(context).primaryColor,
           title: Text(widget.title, style: TextStyle(color: textColor)));
-    });
   }
 
   Widget castConnectedIcon() {
