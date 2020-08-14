@@ -61,7 +61,7 @@ List<ProgrammeInfo> parseXmlContent(String data) {
         }
 
         String description = '';
-        final desc = programme.findElements(CATEGORY_TAG);
+        final desc = programme.findElements(DESCRIPTION_TAG);
         if (desc.isNotEmpty) {
           description = programme.findElements(DESCRIPTION_TAG).first.text;
         }
