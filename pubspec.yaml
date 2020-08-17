@@ -7,7 +7,7 @@ environment:
   sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
-  cached_network_image: ^2.2.0+1
+  cached_network_image: ^2.3.0-rc
   dart_chromecast: ^0.1.2
   intl: ^0.16.1
   video_player:
@@ -24,9 +24,4 @@ dependencies:
   fastotv_common:
     git:
       url: https://github.com/fastogt/flutter_common.git
-      ref: master
-
-  fastotv_dart:
-    git:
-      url: https://github.com/fastogt/fastotv_dart.git
       ref: master
