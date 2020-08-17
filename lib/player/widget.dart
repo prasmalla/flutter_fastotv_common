@@ -167,8 +167,8 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
       _changeState(ReadyToPlayState(url.toString(), userData));
       play().then((_) {
         onPlaying(userData);
-      }).catchError(() => onPlayingError(userData));
-    }).catchError(() => onPlayingError(userData));
+      }).catchError((Object error) => onPlayingError(userData));
+    }).catchError((Object error) => onPlayingError(userData));
   }
 
 }
