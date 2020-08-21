@@ -9,7 +9,6 @@ environment:
 dependencies:
   cached_network_image: ^2.3.0-rc
   dart_chromecast: ^0.1.2
-  intl: ^0.16.1
   video_player:
     git:
       url: https://github.com/topilski/plugins.git
