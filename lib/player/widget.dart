@@ -22,33 +22,29 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
   final StreamController<IPlayerState> state = StreamController<IPlayerState>.broadcast();
 
-  FlutterPlayer _player = FlutterPlayer();
+  VLCPlayer _player = VLCPlayer();
 
-  FlutterPlayer get player => _player;
+  bool _init = false;
+
+  String url;
+
+  dynamic userData;
+
+  VLCPlayer get player => _player;
 
   void playLink(String url, dynamic userData) {
     if (url.isEmpty) {
       return;
     }
 
-    _initLink(url, (uri) => _setVideoLink(uri, userData));
+    _player.controller.setStreamUrl(url).catchError((Object error) => onPlayingError(error));
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
         color: Colors.black,
-        child: Center(
-            child: StreamBuilder<IPlayerState>(
-                stream: state.stream,
-                initialData: InitIPlayerState(),
-                builder: (context, snapshot) {
-                  if (snapshot.data is ReadyToPlayState) {
-                    seekToInterrupt();
-                    return _player.makePlayer();
-                  }
-                  return _player.makeCircular();
-                })));
+        child: Center(child: _player.makePlayer()));
   }
 
   LitePlayer();
@@ -97,7 +93,8 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
 
   @override
   void initState() {
-    _initLink(currentUrl(), (uri) => _setVideoLink(uri, null));
+    _player.addListener(_playerHadler);
+    _initLink(currentUrl());
     _setScreen(true);
     super.initState();
   }
@@ -105,8 +102,9 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   @override
   void dispose() {
     state.close();
+    _player.removeListener(_playerHadler);
     _setScreen(false);
-    player.dispose();
+    _player.dispose();
     super.dispose();
   }
 
@@ -133,42 +131,27 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
     }
   }
 
-  void _initLink(String url, void Function(Uri) onInit) async {
-    final parsed = Uri.tryParse(url);
-    if (parsed == null) {
+  void _initLink(String url) {
+    if (url.isEmpty) {
       return;
     }
 
-    _changeState(InitIPlayerState());
-    /*if (parsed.scheme == 'http' || parsed.scheme == 'https') {
-      try {
-        final resp = await http.get(url).timeout(const Duration(seconds: 1));
-        if (resp.statusCode == 202) {
-          Future.delayed(Duration(milliseconds: TS_DURATION_MSEC)).whenComplete(() {
-            onInit(parsed);
-          });
-        } else {
-          onInit(parsed);
-        }
-      } on TimeoutException catch (e) {
-        onInit(parsed);
-      } on Error catch (e) {
-        onInit(parsed);
+    _player.setInitUrl(url);
+  }
+
+  void _onVlcInit(String url, dynamic userData) {
+    _changeState(ReadyToPlayState(url, userData));
+    _player.play().then((value) {
+      onPlaying(userData);
+    }).catchError((Object error) => onPlayingError(error));
+  }
+
+  void _playerHadler() {
+    if (_player.initialized != _init) {
+      _init = _player.initialized;
+      if (_player.initialized) {
+        _onVlcInit(url, userData);
       }
-      return;
-    }*/
-
-    onInit(parsed);
+    }
   }
-
-  void _setVideoLink(Uri url, dynamic userData) {
-    final Future<void> init = _player.setStreamUrl(url);
-    init.then((value) {
-      _changeState(ReadyToPlayState(url.toString(), userData));
-      play().then((_) {
-        onPlaying(userData);
-      }).catchError((Object error) => onPlayingError(userData));
-    }).catchError((Object error) => onPlayingError(userData));
-  }
-
 }
