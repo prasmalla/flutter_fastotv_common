@@ -1,13 +1,14 @@
 name: flutter_fastotv_common
 author: Alexandr Topilski <support@fastogt.com>
 description: Common files for FastoTV project
-version: 1.0.0
+version: 1.1.0
 
 environment:
-  sdk: '>=2.0.0 <3.0.0'
+  sdk: ">=2.1.0 <3.0.0"
+  flutter: ">=1.20.0 <2.0.0"
 
 dependencies:
-  cached_network_image: ^2.3.0-rc
+  cached_network_image: ^2.3.1
   dart_chromecast: ^0.1.2
   video_player:
     git:
