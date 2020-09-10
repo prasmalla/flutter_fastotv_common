@@ -8,7 +8,7 @@ environment:
   flutter: '>=1.20.0 <2.0.0'
 
 dependencies:
-  cached_network_image: ^2.3.0-rc
+  cached_network_image: ^2.3.1
   dart_chromecast: ^0.1.2
   flutter_vlc_player:
     git:

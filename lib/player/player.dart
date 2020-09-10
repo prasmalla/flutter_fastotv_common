@@ -11,7 +11,8 @@ class VlcPlayerControllerEx extends VlcPlayerController {
   VlcPlayerControllerEx([VoidCallback _onInit]) : super(onInit: _onInit);
 
   @override
-  Future<void> setStreamUrl(String url) async {
+  Future<void> setStreamUrl(String url,
+      {bool isLocalMedia, String subtitle, bool isLocalSubtitle, bool isSubtitleSelected}) async {
     this.url = url;
     return super.setStreamUrl(url);
   }
@@ -49,7 +50,8 @@ class VLCPlayer extends IPlayer {
 
   @override
   Widget makePlayer() {
-    return VlcPlayer(url: _controller.url, aspectRatio: aspectRatio(), controller: _controller, placeholder: makeCircular());
+    return VlcPlayer(
+        url: _controller.url, aspectRatio: aspectRatio(), controller: _controller, placeholder: makeCircular());
   }
 
   @override
