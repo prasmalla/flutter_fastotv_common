@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:core';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-
-import 'package:screen/screen.dart';
-
-import 'package:fastotv_common/volume_manager.dart';
-import 'package:fastotv_common/system_methods.dart' as system;
 import 'package:fastotv_common/screen_orientation.dart' as orientation;
+import 'package:fastotv_common/system_methods.dart' as system;
+import 'package:fastotv_common/volume_manager.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/chromecast/chromecast_info.dart';
+import 'package:screen/screen.dart';
 
 enum OverlayControl { NONE, VOLUME, BRIGHTNESS, SEEK_FORWARD, SEEK_REPLAY }
 
@@ -205,16 +203,16 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with Tick
   Future<void> _initPlatformState() async {
     if (!kIsWeb) {
       _volumeManager = await VolumeManager.getInstance();
-      final bright = await Screen.brightness;
-      setState(() {
-        brightness = bright;
+      Screen.brightness.then((bright) {
+        setState(() {
+          brightness = bright;
+        });
       });
     }
   }
 
   Widget get _gestureController {
-    return Center(
-      child: GestureDetector(
+    final child = GestureDetector(
         onTap: () {
           _appBarVisible ? setOverlaysVisible(false) : setOverlaysVisible(true);
         },
@@ -243,9 +241,8 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with Tick
         },
         child: Container(
           foregroundDecoration: new BoxDecoration(color: Color.fromRGBO(155, 85, 250, 0.0)),
-        ),
-      ),
-    );
+        ));
+    return Center(child: child);
   }
 
   Size _getSizes() {
