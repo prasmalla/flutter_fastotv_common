@@ -79,13 +79,13 @@ class FlutterPlayer extends IPlayer {
   }
 
   @override
-  Future<void> setStreamUrl(Uri url) async {
+  Future<void> setStreamUrl(String url) async {
     if (url == null) {
       return Future.error('Invalid input');
     }
 
     VideoPlayerController old = _controller;
-    _controller = VideoPlayerController.network(url.toString());
+    _controller = VideoPlayerController.network(url);
     if (old != null) {
       Future.delayed(Duration(milliseconds: 100)).then((_) {
         old.dispose();

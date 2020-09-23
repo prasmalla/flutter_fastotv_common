@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_fastotv_common/player/iplayer.dart';
 import 'package:flutter_fastotv_common/player/player.dart';
 import 'package:screen/screen.dart';
 
@@ -22,16 +23,12 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
   final StreamController<IPlayerState> state = StreamController<IPlayerState>.broadcast();
 
-  FlutterPlayer _player = FlutterPlayer();
+  IPlayer _player = FlutterPlayer();
 
   FlutterPlayer get player => _player;
 
   void playLink(String url, dynamic userData) {
-    if (url.isEmpty) {
-      return;
-    }
-
-    _initLink(url, (uri) => _setVideoLink(uri, userData));
+    _setVideoLink(url, userData);
   }
 
   @override
@@ -97,7 +94,7 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
 
   @override
   void initState() {
-    _initLink(currentUrl(), (uri) => _setVideoLink(uri, null));
+    _initLink(currentUrl());
     _setScreen(true);
     super.initState();
   }
@@ -133,13 +130,7 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
     }
   }
 
-  void _initLink(String url, void Function(Uri) onInit) async {
-    final parsed = Uri.tryParse(url);
-    if (parsed == null) {
-      return;
-    }
-
-    _changeState(InitIPlayerState());
+  void _initLink(String url) async {
     /*if (parsed.scheme == 'http' || parsed.scheme == 'https') {
       try {
         final resp = await http.get(url).timeout(const Duration(seconds: 1));
@@ -158,10 +149,11 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
       return;
     }*/
 
-    onInit(parsed);
+    _setVideoLink(url, null);
   }
 
-  void _setVideoLink(Uri url, dynamic userData) {
+  void _setVideoLink(String url, dynamic userData) {
+    _changeState(InitIPlayerState());
     final Future<void> init = _player.setStreamUrl(url);
     init.then((value) {
       _changeState(ReadyToPlayState(url.toString(), userData));
@@ -170,5 +162,4 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
       }).catchError((Object error) => onPlayingError(userData));
     }).catchError((Object error) => onPlayingError(userData));
   }
-
 }
