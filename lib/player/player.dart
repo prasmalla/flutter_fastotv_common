@@ -5,34 +5,14 @@ import 'package:flutter_fastotv_common/player/iplayer.dart';
 import 'package:flutter_fastotv_common/player/progress_bar.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 
-class VlcPlayerControllerEx extends VlcPlayerController {
+class VLCPlayer extends IPlayer {
+  Completer<void> _creatingCompleter;
+  VlcPlayerController _controller;
   String url;
 
-  VlcPlayerControllerEx([VoidCallback _onInit]) : super(onInit: _onInit);
-
-  @override
-  Future<void> setStreamUrl(String url,
-      {bool isLocalMedia, String subtitle, bool isLocalSubtitle, bool isSubtitleSelected}) async {
-    this.url = url;
-    return super.setStreamUrl(url);
-  }
-}
-
-class VLCPlayer extends IPlayer {
-  VlcPlayerControllerEx _controller = VlcPlayerControllerEx();
-
-  VLCPlayer([VoidCallback _onInit]) {
-    _controller = VlcPlayerControllerEx(() {
-      if (_onInit != null) {
-        _onInit();
-      }
-    });
-  }
-
-  bool get initialized => _controller.initialized;
-
-  void setInitUrl(String url) {
-    _controller.url = url;
+  VLCPlayer() {
+    _creatingCompleter = Completer<void>();
+    _controller = VlcPlayerController(onInit: _handleInit);
   }
 
   void addListener(VoidCallback listener) {
@@ -50,8 +30,7 @@ class VLCPlayer extends IPlayer {
 
   @override
   Widget makePlayer() {
-    return VlcPlayer(
-        url: _controller.url, aspectRatio: aspectRatio(), controller: _controller, placeholder: makeCircular());
+    return VlcPlayer(url: url, aspectRatio: aspectRatio(), controller: _controller, placeholder: makeCircular());
   }
 
   @override
@@ -113,15 +92,20 @@ class VLCPlayer extends IPlayer {
 
   @override
   Future<void> setStreamUrl(String url) async {
-    if (url == null || _controller.initialized) {
+    if (url == null) {
       return Future.error('Invalid input');
     }
 
-    return _controller.setStreamUrl(url);
+    _controller.setStreamUrl(url);
+    return _creatingCompleter.future;
   }
 
   @override
   void dispose() {
     _controller?.dispose();
+  }
+
+  void _handleInit() {
+    _creatingCompleter.complete();
   }
 }

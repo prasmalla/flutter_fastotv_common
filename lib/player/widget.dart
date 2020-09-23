@@ -25,21 +25,24 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
 
   IPlayer _player = VLCPlayer();
 
-  bool _init = false;
-
-  String url;
-
-  dynamic userData;
-
-  VLCPlayer get player => _player;
-
   void playLink(String url, dynamic userData) {
-    _player.setStreamUrl(url).catchError((Object error) => onPlayingError(error));
+    _setVideoLink(url, userData);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(color: Colors.black, child: Center(child: _player.makePlayer()));
+    return Container(
+        color: Colors.black,
+        child: Center(
+            child: StreamBuilder<IPlayerState>(
+                stream: state.stream,
+                initialData: InitIPlayerState(),
+                builder: (context, snapshot) {
+                  if (snapshot.data is ReadyToPlayState) {
+                    seekToInterrupt();
+                  }
+                  return _player.makePlayer();
+                })));
   }
 
   LitePlayer();
@@ -55,40 +58,39 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   void playChannel(S stream);
 
   bool isPlaying() {
-    return player.isPlaying();
+    return _player.isPlaying();
   }
 
   Duration position() {
-    return player.position();
+    return _player.position();
   }
 
   Future<void> pause() async {
-    return player.pause();
+    return _player.pause();
   }
 
   Future<void> play() async {
-    return player.play();
+    return _player.play();
   }
 
   Future<void> seekTo(Duration duration) async {
-    return player.seekTo(duration);
+    return _player.seekTo(duration);
   }
 
   Future<void> seekForward(Duration duration) {
-    return player.seekForward(duration);
+    return _player.seekForward(duration);
   }
 
   Future<void> seekBackward(Duration duration) {
-    return player.seekBackward(duration);
+    return _player.seekBackward(duration);
   }
 
   Future<void> setVolume(double volume) async {
-    return player.setVolume(volume);
+    return _player.setVolume(volume);
   }
 
   @override
   void initState() {
-    player.addListener(_playerHadler);
     _initLink(currentUrl());
     _setScreen(true);
     super.initState();
@@ -97,7 +99,6 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   @override
   void dispose() {
     state.close();
-    player.removeListener(_playerHadler);
     _setScreen(false);
     _player.dispose();
     super.dispose();
@@ -109,9 +110,9 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
         initialData: InitIPlayerState(),
         builder: (context, snapshot) {
           if (snapshot.data is ReadyToPlayState) {
-            return player.timeLine();
+            return _player.timeLine();
           }
-          return player.makeLinear();
+          return _player.makeLinear();
         });
   }
 
@@ -127,26 +128,17 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   }
 
   void _initLink(String url) {
-    if (url.isEmpty) {
-      return;
-    }
-
-    player.setInitUrl(url);
+    _setVideoLink(url, null);
   }
 
-  void _onVlcInit(String url, dynamic userData) {
-    _changeState(ReadyToPlayState(url, userData));
-    _player.play().then((value) {
-      onPlaying(userData);
-    }).catchError((Object error) => onPlayingError(error));
-  }
-
-  void _playerHadler() {
-    if (player.initialized != _init) {
-      _init = player.initialized;
-      if (player.initialized) {
-        _onVlcInit(url, userData);
-      }
-    }
+  void _setVideoLink(String url, dynamic userData) {
+    _changeState(InitIPlayerState());
+    final Future<void> init = _player.setStreamUrl(url);
+    init.then((value) {
+      _changeState(ReadyToPlayState(url, userData));
+      play().then((_) {
+        onPlaying(userData);
+      }).catchError((Object error) => onPlayingError(userData));
+    }).catchError((Object error) => onPlayingError(userData));
   }
 }
