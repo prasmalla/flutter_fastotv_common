@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_fastotv_common/player/iplayer.dart';
 import 'package:flutter_fastotv_common/player/player.dart';
 import 'package:screen/screen.dart';
 
@@ -22,7 +23,7 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
   final StreamController<IPlayerState> state = StreamController<IPlayerState>.broadcast();
 
-  VLCPlayer _player = VLCPlayer();
+  IPlayer _player = VLCPlayer();
 
   bool _init = false;
 
@@ -87,7 +88,7 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
 
   @override
   void initState() {
-    _player.addListener(_playerHadler);
+    player.addListener(_playerHadler);
     _initLink(currentUrl());
     _setScreen(true);
     super.initState();
@@ -96,7 +97,7 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   @override
   void dispose() {
     state.close();
-    _player.removeListener(_playerHadler);
+    player.removeListener(_playerHadler);
     _setScreen(false);
     _player.dispose();
     super.dispose();
@@ -130,7 +131,7 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
       return;
     }
 
-    _player.setInitUrl(url);
+    player.setInitUrl(url);
   }
 
   void _onVlcInit(String url, dynamic userData) {
@@ -141,9 +142,9 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   }
 
   void _playerHadler() {
-    if (_player.initialized != _init) {
-      _init = _player.initialized;
-      if (_player.initialized) {
+    if (player.initialized != _init) {
+      _init = player.initialized;
+      if (player.initialized) {
         _onVlcInit(url, userData);
       }
     }
