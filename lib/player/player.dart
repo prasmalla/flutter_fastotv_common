@@ -8,11 +8,13 @@ import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 class VLCPlayer extends IPlayer {
   Completer<void> _creatingCompleter;
   VlcPlayerController _controller;
+  VlcPlayer _player;
   String url;
 
   VLCPlayer() {
     _creatingCompleter = Completer<void>();
     _controller = VlcPlayerController(onInit: _handleInit);
+    _player = VlcPlayer(url: url, aspectRatio: aspectRatio(), controller: _controller, placeholder: makeCircular());
   }
 
   void addListener(VoidCallback listener) {
@@ -30,7 +32,7 @@ class VLCPlayer extends IPlayer {
 
   @override
   Widget makePlayer() {
-    return VlcPlayer(url: url, aspectRatio: aspectRatio(), controller: _controller, placeholder: makeCircular());
+    return _player;
   }
 
   @override
@@ -96,6 +98,7 @@ class VLCPlayer extends IPlayer {
       return Future.error('Invalid input');
     }
 
+    this.url = url;
     _controller.setStreamUrl(url);
     return _creatingCompleter.future;
   }
