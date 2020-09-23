@@ -23,11 +23,11 @@ class VLCPlayer extends IPlayer {
 
   VLCPlayer([VoidCallback _onInit]) {
     _controller = VlcPlayerControllerEx(() {
-      if (_onInit != null) _onInit();
+      if (_onInit != null) {
+        _onInit();
+      }
     });
   }
-
-  VlcPlayerControllerEx get controller => _controller;
 
   bool get initialized => _controller.initialized;
 
@@ -112,12 +112,12 @@ class VLCPlayer extends IPlayer {
   }
 
   @override
-  Future<void> setStreamUrl(Uri url) async {
+  Future<void> setStreamUrl(String url) async {
     if (url == null || _controller.initialized) {
       return Future.error('Invalid input');
     }
 
-    return _controller.setStreamUrl(url.toString());
+    return _controller.setStreamUrl(url);
   }
 
   @override

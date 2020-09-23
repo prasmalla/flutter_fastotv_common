@@ -33,18 +33,12 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   VLCPlayer get player => _player;
 
   void playLink(String url, dynamic userData) {
-    if (url.isEmpty) {
-      return;
-    }
-
-    _player.controller.setStreamUrl(url).catchError((Object error) => onPlayingError(error));
+    _player.setStreamUrl(url).catchError((Object error) => onPlayingError(error));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        color: Colors.black,
-        child: Center(child: _player.makePlayer()));
+    return Container(color: Colors.black, child: Center(child: _player.makePlayer()));
   }
 
   LitePlayer();
