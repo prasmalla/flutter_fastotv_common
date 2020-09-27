@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_fastotv_common/chromecast/chromecast_info.dart';
 
 class CCDisconnectDialog extends StatefulWidget {
