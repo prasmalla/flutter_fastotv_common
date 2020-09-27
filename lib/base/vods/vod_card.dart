@@ -55,7 +55,9 @@ class VodCard extends StatelessWidget {
               duration == null
                   ? SizedBox()
                   : Positioned(
-                      bottom: 0, child: Container(height: 5, width: timeLine(), color: Theme.of(context).accentColor)),
+                  bottom: 0, child: Container(height: 5, width: timeLine(), color: Theme
+                  .of(context)
+                  .accentColor)),
               InkWell(onTap: () => onPressed())
             ])));
   }

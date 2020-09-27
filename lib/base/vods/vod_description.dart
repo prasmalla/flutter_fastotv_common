@@ -15,7 +15,9 @@ class CircleProgress extends CustomPainter {
     //this is base circle
     Paint outerCircle = Paint()
       ..strokeWidth = WIDTH_CONTROL
-      ..color = Theme.of(context).brightness == Brightness.dark
+      ..color = Theme
+          .of(context)
+          .brightness == Brightness.dark
           ? Color.fromRGBO(255, 255, 255, 0.1)
           : Color.fromRGBO(0, 0, 0, 0.1)
       ..style = PaintingStyle.stroke;
@@ -87,30 +89,30 @@ class VodDescriptionText extends StatelessWidget {
   Widget build(BuildContext context) {
     return description == ''
         ? Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-            Icon(Icons.warning),
-            SizedBox(height: 8),
-            Flexible(child: Text("No description provided", softWrap: true))
-          ])
+      Icon(Icons.warning),
+      SizedBox(height: 8),
+      Flexible(child: Text("No description provided", softWrap: true))
+    ])
         : SingleChildScrollView(
-            controller: scrollController ?? ScrollController(),
-            child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      Row(children: <Widget>[
-                        Text('Description',
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: (textSize ?? TEXT_SIZE) + 8, fontWeight: FontWeight.bold))
-                      ]),
-                      SizedBox(height: 8),
-                      Row(children: <Widget>[
-                        Flexible(
-                            child: Text(description, style: TextStyle(fontSize: textSize ?? TEXT_SIZE), softWrap: true))
-                      ])
-                    ])));
+        controller: scrollController ?? ScrollController(),
+        child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  Row(children: <Widget>[
+                    Text('Description',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: (textSize ?? TEXT_SIZE) + 8, fontWeight: FontWeight.bold))
+                  ]),
+                  SizedBox(height: 8),
+                  Row(children: <Widget>[
+                    Flexible(
+                        child: Text(description, style: TextStyle(fontSize: textSize ?? TEXT_SIZE), softWrap: true))
+                  ])
+                ])));
   }
 }
 

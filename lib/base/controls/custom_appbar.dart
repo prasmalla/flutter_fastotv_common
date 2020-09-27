@@ -35,14 +35,20 @@ class _ChannelPageAppBarState extends State<ChannelPageAppBar> {
 
   @override
   Widget build(BuildContext context) {
-      Color textColor = widget.textColor ?? Theme.of(context).primaryTextTheme.caption.color;
-      return AppBar(
-          actionsIconTheme: IconThemeData(color: textColor),
-          leading: IconButton(
-              onPressed: () => Navigator.pop(context, widget.onExit), icon: Icon(Icons.arrow_back), color: textColor),
-          actions: actionButtons,
-          backgroundColor: widget.backgroundColor ?? Theme.of(context).primaryColor,
-          title: Text(widget.title, style: TextStyle(color: textColor)));
+    Color textColor = widget.textColor ?? Theme
+        .of(context)
+        .primaryTextTheme
+        .caption
+        .color;
+    return AppBar(
+        actionsIconTheme: IconThemeData(color: textColor),
+        leading: IconButton(
+            onPressed: () => Navigator.pop(context, widget.onExit), icon: Icon(Icons.arrow_back), color: textColor),
+        actions: actionButtons,
+        backgroundColor: widget.backgroundColor ?? Theme
+            .of(context)
+            .primaryColor,
+        title: Text(widget.title, style: TextStyle(color: textColor)));
   }
 
   Widget castConnectedIcon() {

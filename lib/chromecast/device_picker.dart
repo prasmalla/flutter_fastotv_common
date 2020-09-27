@@ -1,11 +1,9 @@
 import 'dart:async';
 
 import 'package:dart_chromecast/casting/cast_device.dart';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_mdns_plugin/flutter_mdns_plugin.dart';
-
 import 'package:flutter_fastotv_common/chromecast/chromecast_info.dart';
+import 'package:flutter_mdns_plugin/flutter_mdns_plugin.dart';
 
 class ChromeCastDevicePicker extends StatefulWidget {
   final String url;

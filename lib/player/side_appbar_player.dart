@@ -1,10 +1,9 @@
 import 'dart:core';
 
-import 'package:flutter/material.dart';
-
-import 'package:flutter_fastotv_common/player/appbar_player.dart';
-import 'package:fastotv_common/screen_orientation.dart' as orientation;
 import 'package:fastotv_common/colors.dart';
+import 'package:fastotv_common/screen_orientation.dart' as orientation;
+import 'package:flutter/material.dart';
+import 'package:flutter_fastotv_common/player/appbar_player.dart';
 
 abstract class SideAppBarPlayer<T extends StatefulWidget> extends AppBarPlayer<T> with WidgetsBindingObserver {
   bool isVisiblePrograms = false;
