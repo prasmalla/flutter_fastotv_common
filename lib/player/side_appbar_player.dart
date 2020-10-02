@@ -1,7 +1,7 @@
 import 'dart:core';
 
-import 'package:fastotv_common/colors.dart';
-import 'package:fastotv_common/screen_orientation.dart' as orientation;
+import 'package:flutter_common/colors.dart';
+import 'package:flutter_common/screen_orientation.dart' as orientation;
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/player/appbar_player.dart';
 
