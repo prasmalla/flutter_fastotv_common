@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:core';
 
-import 'package:fastotv_common/screen_orientation.dart' as orientation;
-import 'package:fastotv_common/system_methods.dart' as system;
-import 'package:fastotv_common/volume_manager.dart';
+import 'package:flutter_common/screen_orientation.dart' as orientation;
+import 'package:flutter_common/system_methods.dart' as system;
+import 'package:flutter_common/volume_manager.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_fastotv_common/chromecast/chromecast_info.dart';
