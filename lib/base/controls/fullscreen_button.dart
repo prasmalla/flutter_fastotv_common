@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fastotv_common/screen_orientation.dart' as orientation;
+import 'package:flutter_common/screen_orientation.dart' as orientation;
 
 class FullscreenButton extends StatelessWidget {
   final bool opened;
