@@ -19,19 +19,39 @@ class ReadyToPlayState extends IPlayerState {
   final dynamic userData;
 }
 
-abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
+abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> with WidgetsBindingObserver {
   static const TS_DURATION_MSEC = 5000;
   final StreamController<IPlayerState> state = StreamController<IPlayerState>.broadcast();
 
   IPlayer _player = VLCPlayer();
 
-  void playLink(String url, dynamic userData) {
-    _setVideoLink(url, userData);
+  @override
+  void initState() {
+    super.initState();
+    _player = VLCPlayer();
+    _initLink(currentUrl());
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    state.close();
+    _setScreen(false);
+    _player.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override 
+  void didChangeMetrics() {
+    _player = VLCPlayer();
+    _initLink(currentUrl());
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
+        key: UniqueKey(),
         color: Colors.black,
         child: Center(
             child: StreamBuilder<IPlayerState>(
@@ -46,6 +66,10 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   }
 
   LitePlayer();
+
+  void playLink(String url, dynamic userData) {
+    _setVideoLink(url, userData);
+  }
 
   void onPlaying(dynamic userData);
 
@@ -87,21 +111,6 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
 
   Future<void> setVolume(double volume) async {
     return _player.setVolume(volume);
-  }
-
-  @override
-  void initState() {
-    _initLink(currentUrl());
-    _setScreen(true);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    state.close();
-    _setScreen(false);
-    _player.dispose();
-    super.dispose();
   }
 
   Widget timeLine() {
