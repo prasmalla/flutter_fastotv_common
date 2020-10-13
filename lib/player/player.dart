@@ -30,12 +30,14 @@ class VLCPlayer extends IPlayer {
 
   @override
   Widget makePlayer() {
+    final options = ['--no-skip-frames'];
     return VlcPlayer(
         url: url,
         aspectRatio: aspectRatio(),
         controller: _controller,
         placeholder: makeCircular(),
-        hwAcc: HwAcc.DECODING,
+        hwAcc: HwAcc.FULL,
+        options: options,
         isLocalMedia: false);
   }
 
