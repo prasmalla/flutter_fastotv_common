@@ -31,7 +31,12 @@ class VLCPlayer extends IPlayer {
   @override
   Widget makePlayer() {
     return VlcPlayer(
-        url: url, aspectRatio: aspectRatio(), controller: _controller, placeholder: makeCircular(), hwAcc: HwAcc.FULL);
+        url: url,
+        aspectRatio: aspectRatio(),
+        controller: _controller,
+        placeholder: makeCircular(),
+        hwAcc: HwAcc.DECODING,
+        isLocalMedia: false);
   }
 
   @override
