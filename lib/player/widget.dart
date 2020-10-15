@@ -28,6 +28,7 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> with Wid
   @override
   void initState() {
     super.initState();
+    _setScreen(true);
     _player = VLCPlayer();
     _initLink(currentUrl());
     WidgetsBinding.instance.addObserver(this);
