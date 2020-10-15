@@ -14,7 +14,7 @@ enum OverlayControl { NONE, VOLUME, BRIGHTNESS, SEEK_FORWARD, SEEK_REPLAY }
 abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with TickerProviderStateMixin {
   static const int APPBAR_TIMEOUT = 5;
   static const APPBAR_HEIGHT = 56.0;
-  static const ANIMATION_MS = Duration(milliseconds: 100);
+  static const DURATION = Duration(milliseconds: 100);
 
   double playerOverlayOpacity = 0.0;
   OverlayControl currentPlayerControl = OverlayControl.NONE;
@@ -65,8 +65,8 @@ abstract class AppBarPlayer<T extends StatefulWidget> extends State<T> with Tick
     _appBarVisible = true;
     _initPlatformState();
     setTimerOverlays();
-    _appbarController = AnimationController(duration: ANIMATION_MS, value: 1.0, vsync: this);
-    _bottomOverlayController = AnimationController(duration: ANIMATION_MS, value: 1.0, vsync: this);
+    _appbarController = AnimationController(duration: DURATION, value: 1.0, vsync: this);
+    _bottomOverlayController = AnimationController(duration: DURATION, value: 1.0, vsync: this);
   }
 
   @override
