@@ -45,6 +45,7 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> with Wid
 
   @override 
   void didChangeMetrics() {
+    _player.dispose();
     _player = VLCPlayer();
     _initLink(currentUrl());
   }
