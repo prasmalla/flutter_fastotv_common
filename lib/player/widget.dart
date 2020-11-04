@@ -23,9 +23,23 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   static const TS_DURATION_MSEC = 5000;
   final StreamController<IPlayerState> state = StreamController<IPlayerState>.broadcast();
 
-  IPlayer _player = FlutterPlayer();
+  IPlayer _player;
 
-  FlutterPlayer get player => _player;
+  @override
+  void initState() {
+    super.initState();
+    _setScreen(true);
+    _player = FlutterPlayer();
+    _initLink(currentUrl());
+  }
+
+  @override
+  void dispose() {
+    state.close();
+    _setScreen(false);
+    _player.dispose();
+    super.dispose();
+  }
 
   void playLink(String url, dynamic userData) {
     _setVideoLink(url, userData);
@@ -61,50 +75,35 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
   void playChannel(S stream);
 
   bool isPlaying() {
-    return player.isPlaying();
+    return _player.isPlaying();
   }
 
   Duration position() {
-    return player.position();
+    return _player.position();
   }
 
   Future<void> pause() async {
-    return player.pause();
+    return _player.pause();
   }
 
   Future<void> play() async {
-    return player.play();
+    return _player.play();
   }
 
   Future<void> seekTo(Duration duration) async {
-    return player.seekTo(duration);
+    return _player.seekTo(duration);
   }
 
   Future<void> seekForward(Duration duration) {
-    return player.seekForward(duration);
+    return _player.seekForward(duration);
   }
 
   Future<void> seekBackward(Duration duration) {
-    return player.seekBackward(duration);
+    return _player.seekBackward(duration);
   }
 
   Future<void> setVolume(double volume) async {
-    return player.setVolume(volume);
-  }
-
-  @override
-  void initState() {
-    _initLink(currentUrl());
-    _setScreen(true);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    state.close();
-    _setScreen(false);
-    player.dispose();
-    super.dispose();
+    return _player.setVolume(volume);
   }
 
   Widget timeLine() {
@@ -113,9 +112,9 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> {
         initialData: InitIPlayerState(),
         builder: (context, snapshot) {
           if (snapshot.data is ReadyToPlayState) {
-            return player.timeLine();
+            return _player.timeLine();
           }
-          return player.makeLinear();
+          return _player.makeLinear();
         });
   }
 
