@@ -23,7 +23,7 @@ abstract class LitePlayer<T extends StatefulWidget, S> extends State<T> with Wid
   static const TS_DURATION_MSEC = 5000;
   final StreamController<IPlayerState> state = StreamController<IPlayerState>.broadcast();
 
-  IPlayer _player = VLCPlayer();
+  IPlayer _player;
 
   @override
   void initState() {
